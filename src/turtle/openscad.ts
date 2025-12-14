@@ -1,0 +1,36 @@
+import type { Point, TurtlePolygon } from './types'
+
+function formatNum(n: number) {
+  return Number(n.toFixed(6)).toString()
+}
+
+function pointsEqual(a: Point, b: Point) {
+  return a.x === b.x && a.y === b.y
+}
+
+export function generateOpenScad(polygons: TurtlePolygon[]): string {
+  if (polygons.length === 0) return '// No polygons'
+
+  const blocks: string[] = []
+  for (const poly of polygons) {
+    const pts = [...poly.points]
+    if (pts.length === 0) pts.push({ x: 0, y: 0 })
+
+    const first = pts[0]
+    const last = pts[pts.length - 1]
+    if (!pointsEqual(first, last)) pts.push({ ...first })
+
+    const lines: string[] = []
+    lines.push('polygon(points=[')
+    for (let i = 0; i < pts.length; i++) {
+      const p = pts[i]
+      const comma = i === pts.length - 1 ? '' : ','
+      lines.push(`  [${formatNum(p.x)}, ${formatNum(p.y)}]${comma}`)
+    }
+    lines.push(']);')
+
+    blocks.push(lines.join('\n'))
+  }
+
+  return blocks.join('\n\n')
+}
