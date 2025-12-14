@@ -79,7 +79,7 @@ docker push "$USER/turtle2openscad:latest"
 ```
 
 ## Docker Compose
-```json
+```yml
 services:
   turtle2openscad:
     image: becdetat/turtle2openscad:latest
