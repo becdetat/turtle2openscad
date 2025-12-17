@@ -26,6 +26,7 @@ const aliasToKind: Record<string, TurtleCommandKind> = {
   SETXY: 'SETXY',
   SETH: 'SETH',
   SETHEADING: 'SETH',
+  HOME: "HOME"
 }
 
 function rangeForSegment(lineNumber: number, startCol: number, endCol: number): SourceRange {

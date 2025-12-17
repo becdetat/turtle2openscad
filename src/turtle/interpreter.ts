@@ -168,6 +168,17 @@ export function executeTurtle(
 
         break
       }
+      case "HOME": {
+        segments.push({ from: { x, y }, to: { x: 0, y: 0 }, penDown })
+        x = 0
+        y = 0
+        headingDeg = 0
+        
+        if (penDown) {
+          ensurePolygonStarted()
+          currentPolygon!.push({ x, y })
+        }
+      }
     }
   }
 
