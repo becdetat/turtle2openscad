@@ -11,6 +11,8 @@ Client-side web app that converts a small Turtle script into OpenSCAD `polygon(p
 
 ## Turtle language
 
+Only a very small subset of the Berkeley Logo dialect is included. At the moment only basic movement and pen up/down commands are supported.
+
 - Separators: newline and `;`
 - Comments: `# ...` and `// ...` (to end of line)
 - Numbers: decimals and negative values allowed
@@ -23,6 +25,8 @@ Client-side web app that converts a small Turtle script into OpenSCAD `polygon(p
 	- `PD` / `PENDOWN`
 
 Invalid statements are reported and skipped; execution continues.
+
+See the [Issues](https://github.com/becdetat/turtle2openscad/issues) for more commands that are planned for implementation. Because of the scope of the project I'm not planning on making this into a full Logo dialect parser. The `LOOP` command is probably as complex as is needed.
 
 ## Local development
 
