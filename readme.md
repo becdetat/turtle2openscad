@@ -28,6 +28,7 @@ Only a very small subset of the Berkeley Logo dialect is included. At the moment
   - `SETX <n>` - move the turtle to the absolute X coordinate 
   - `SETY <n>` - move the turtle to the absolute Y coordinate 
   - `SETXY <n> <n>` - move the turtle to the absolute X and Y coordinates
+  - `SETH` / `SETHEADING <deg>` - turn the turtle to a new absolute heading, relative to the Y axis
 
 Invalid statements are reported and skipped; execution continues.
 

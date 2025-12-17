@@ -64,6 +64,9 @@ export function executeTurtle(
       case 'RT':
         headingDeg -= cmd.value ?? 0
         break
+      case 'SETH':
+        headingDeg = cmd.value ?? 0
+        break
       case 'PU':
         if (penDown) {
           collectCommentsSince(polygonStartLine, cmdLine)

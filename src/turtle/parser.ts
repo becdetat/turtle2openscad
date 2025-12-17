@@ -24,6 +24,8 @@ const aliasToKind: Record<string, TurtleCommandKind> = {
   SETX: 'SETX',
   SETY: 'SETY',
   SETXY: 'SETXY',
+  SETH: 'SETH',
+  SETHEADING: 'SETH',
 }
 
 function rangeForSegment(lineNumber: number, startCol: number, endCol: number): SourceRange {
@@ -130,7 +132,7 @@ export function parseTurtle(source: string): ParseResult {
           }
         } else {
           // These commands require zero or one numbers
-          const expectsNumber = kind === 'FD' || kind === 'BK' || kind === 'LT' || kind === 'RT' || kind === 'SETX' || kind === 'SETY'
+          const expectsNumber = kind === 'FD' || kind === 'BK' || kind === 'LT' || kind === 'RT' || kind === 'SETX' || kind === 'SETY' || kind === 'SETH'
 
           if (expectsNumber) {
             if (parts.length < 2) {
