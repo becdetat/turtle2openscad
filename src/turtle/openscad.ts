@@ -21,6 +21,12 @@ export function generateOpenScad(polygons: TurtlePolygon[]): string {
     if (!pointsEqual(first, last)) pts.push({ ...first })
 
     const lines: string[] = []
+    
+    // Output comments associated with this polygon
+    for (const comment of poly.comments) {
+      lines.push(comment.text)
+    }
+    
     lines.push('polygon(points=[')
     for (let i = 0; i < pts.length; i++) {
       const p = pts[i]

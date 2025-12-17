@@ -29,6 +29,7 @@ Technologies I want to use:
 	- `RT` / `RIGHT <deg>`
 	- `PU` / `PENUP`
 	- `PD` / `PENDOWN`
+	- `ARC <angle> <radius>` - draws an arc of a circle with turtle at center, starting at turtle's heading, extending clockwise through the angle. Turtle does not move. Approximated as polygon points (configurable in Settings).
 - Invalid statements: report an error and skip; continue executing remaining statements
 
 ## Preview

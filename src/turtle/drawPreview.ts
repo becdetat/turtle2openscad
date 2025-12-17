@@ -81,6 +81,22 @@ export function drawPreview(
     const isVisible = i < fullCount || isPartial
     if (!isVisible) break
 
+    // For arc segments, don't show partial - show all or none
+    const isArcSegment = s.arcGroup !== undefined
+    let shouldDraw = true
+    let drawFraction = 1
+
+    if (isArcSegment && isPartial) {
+      // If this arc segment is the partial one, show it fully (not partially)
+      // The animation logic ensures we skip to show the whole arc at once
+      shouldDraw = true
+      drawFraction = 1
+    } else if (isPartial) {
+      drawFraction = frac
+    }
+
+    if (!shouldDraw) continue
+
     ctx.save()
     ctx.lineWidth = 2
     if (s.penDown) {
@@ -91,7 +107,7 @@ export function drawPreview(
       ctx.setLineDash([8, 6])
     }
 
-    drawSeg(s, isPartial ? frac : 1)
+    drawSeg(s, drawFraction)
     ctx.restore()
   }
 

@@ -23,6 +23,7 @@ Only a very small subset of the Berkeley Logo dialect is included. At the moment
 	- `RT` / `RIGHT <deg>`
 	- `PU` / `PENUP`
 	- `PD` / `PENDOWN`
+	- `ARC <angle> <radius>` - draws an arc with turtle at center, starting at turtle's heading, extending clockwise through the angle. Turtle does not move.
 
 Invalid statements are reported and skipped; execution continues.
 

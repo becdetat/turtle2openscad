@@ -3,9 +3,15 @@ import type { OnMount } from '@monaco-editor/react'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import PauseIcon from '@mui/icons-material/Pause'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
+import SettingsIcon from '@mui/icons-material/Settings'
+import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import {
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   IconButton,
   Paper,
@@ -23,17 +29,23 @@ import { parseTurtle } from './turtle/parser'
 import { defaultTurtleScript } from './turtle/sample'
 import { clamp } from './helpers/clamp'
 import { drawPreview } from './turtle/drawPreview'
+import { useSettings } from './hooks/useSettings'
 
 export default function App() {
   const theme = useTheme()
+  const { settings, setSettings, resetArcPoints, DEFAULTS } = useSettings()
 
   const [source, setSource] = useState(defaultTurtleScript)
   const [isPlaying, setIsPlaying] = useState(false)
   const [speed, setSpeed] = useState(10)
   const [progress, setProgress] = useState(0)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const parseResult = useMemo(() => parseTurtle(source), [source])
-  const runResult = useMemo(() => executeTurtle(parseResult.commands), [parseResult.commands])
+  const runResult = useMemo(
+    () => executeTurtle(parseResult.commands, { arcPointsPer90Deg: settings.arcPointsPer90Deg }, parseResult.comments),
+    [parseResult.commands, settings.arcPointsPer90Deg, parseResult.comments],
+  )
   const openScad = useMemo(() => generateOpenScad(runResult.polygons), [runResult.polygons])
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -60,7 +72,8 @@ export default function App() {
   }, [source])
 
   useEffect(() => {
-    const total = runResult.segments.length
+    const segments = runResult.segments
+    const total = segments.length
     if (!isPlaying) {
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current)
       rafRef.current = null
@@ -74,11 +87,23 @@ export default function App() {
       lastTsRef.current = ts
 
       setProgress((p) => {
-        const next = p + dt * speed
+        let next = p + dt * speed
         if (next >= total) {
           setIsPlaying(false)
           return total
         }
+
+        // Skip ahead to show entire arc groups at once
+        const currentIndex = Math.floor(next)
+        if (currentIndex < segments.length && segments[currentIndex].arcGroup !== undefined) {
+          const arcGroup = segments[currentIndex].arcGroup
+          let lastArcIndex = currentIndex
+          while (lastArcIndex < segments.length && segments[lastArcIndex].arcGroup === arcGroup) {
+            lastArcIndex++
+          }
+          next = Math.max(next, lastArcIndex)
+        }
+
         return next
       })
 
@@ -163,6 +188,9 @@ export default function App() {
       // ignore
     }
   }
+
+  const handleSettingsOpen = () => setSettingsOpen(true)
+  const handleSettingsClose = () => setSettingsOpen(false)
 
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -282,9 +310,14 @@ export default function App() {
           <Box sx={{ px: 2, py: 1 }}>
             <Stack direction="row" alignItems="center" justifyContent="space-between">
               <Typography variant="subtitle1">OpenSCAD</Typography>
-              <IconButton aria-label="Copy OpenSCAD" onClick={onCopy} size="small">
-                <ContentCopyIcon fontSize="small" />
-              </IconButton>
+              <Stack direction="row" spacing={1}>
+                <IconButton aria-label="Settings" onClick={handleSettingsOpen} size="small">
+                  <SettingsIcon fontSize="small" />
+                </IconButton>
+                <IconButton aria-label="Copy OpenSCAD" onClick={onCopy} size="small">
+                  <ContentCopyIcon fontSize="small" />
+                </IconButton>
+              </Stack>
             </Stack>
           </Box>
           <Divider />
@@ -306,6 +339,48 @@ export default function App() {
           </Box>
         </Paper>
       </Box>
+
+      <Dialog open={settingsOpen} onClose={handleSettingsClose} maxWidth="sm">
+        <DialogTitle>Settings</DialogTitle>
+        <DialogContent>
+          <Stack spacing={3} sx={{ pt: 1 }}>
+            <Stack spacing={1}>
+              <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
+                <Typography variant="subtitle2">Points per 90° of arc</Typography>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <IconButton
+                    size="small"
+                    onClick={resetArcPoints}
+                    aria-label="Reset to default"
+                    disabled={settings.arcPointsPer90Deg === DEFAULTS.arcPointsPer90Deg}
+                  >
+                    <RestartAltIcon fontSize="small" />
+                  </IconButton>
+                  <TextField
+                    type="number"
+                    value={settings.arcPointsPer90Deg}
+                    onChange={(e) => {
+                      const val = Number(e.target.value)
+                      if (Number.isFinite(val) && val > 0) {
+                        setSettings({ arcPointsPer90Deg: val })
+                      }
+                    }}
+                    size="small"
+                    inputProps={{ min: 1, step: 1 }}
+                    sx={{ width: 120 }}
+                  />
+                </Stack>
+              </Stack>
+              <Typography variant="caption" color="text.secondary">
+                Default: {DEFAULTS.arcPointsPer90Deg}
+              </Typography>
+            </Stack>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleSettingsClose}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }

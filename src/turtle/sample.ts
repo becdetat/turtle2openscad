@@ -12,12 +12,10 @@ forward 50;
 penup;
 forward 80;
 
-// Triangle
+/*
+Draw a 180 degree arc
+with a radius of 30mm
+*/
 pendown;
-left 30;
-forward 40;
-right 120;
-forward 40;
-right 120;
-forward 40;
+arc 180 30;
 `
