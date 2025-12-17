@@ -31,16 +31,26 @@ import { clamp } from './helpers/clamp'
 import { drawPreview } from './turtle/drawPreview'
 import { useSettings } from './hooks/useSettings'
 
+const STORAGE_KEY = 'turtle2openscad:script'
+
 export default function App() {
   const theme = useTheme()
   const { settings, setSettings, resetArcPoints, DEFAULTS } = useSettings()
 
-  const [source, setSource] = useState(defaultTurtleScript)
+  const [source, setSource] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      return saved ?? defaultTurtleScript
+    } catch {
+      return defaultTurtleScript
+    }
+  })
   const [isPlaying, setIsPlaying] = useState(false)
   const [speed, setSpeed] = useState(10)
   const [progress, setProgress] = useState(0)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [activeSegments, setActiveSegments] = useState<ReturnType<typeof executeTurtle>['segments']>([])
+  const [hasAutoPlayed, setHasAutoPlayed] = useState(false)
 
   const parseResult = useMemo(() => parseTurtle(source), [source])
   const runResult = useMemo(
@@ -52,6 +62,15 @@ export default function App() {
   useEffect(() => {
     runResultRef.current = runResult
   }, [runResult])
+
+  // Save source to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, source)
+    } catch {
+      // ignore
+    }
+  }, [source])
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const rafRef = useRef<number | null>(null)
@@ -76,6 +95,14 @@ export default function App() {
   useEffect(() => {
     setIsPlaying(false)
   }, [source])
+
+  // Auto-play when runResult first has segments
+  useEffect(() => {
+    if (!hasAutoPlayed && runResult.segments.length > 0) {
+      setHasAutoPlayed(true)
+      handlePlay()
+    }
+  }, [hasAutoPlayed, runResult.segments, handlePlay])
 
   useEffect(() => {
     const segments = activeSegments
