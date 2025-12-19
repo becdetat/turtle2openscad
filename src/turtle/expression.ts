@@ -34,6 +34,9 @@ function tokenize(input: string): string[] {
   return tokens
 }
 
+// Variable context for evaluation
+export type VariableContext = Map<string, number>
+
 // Parse expression with proper precedence
 export function parseExpression(input: string): Expression | null {
   const tokens = tokenize(input.trim())
@@ -107,7 +110,7 @@ function parseUnary(state: ParseState): Expression {
   return parseAtom(state)
 }
 
-// Atoms (numbers and parenthesized expressions)
+// Atoms (numbers, variables, and parenthesized expressions)
 function parseAtom(state: ParseState): Expression {
   const token = peek(state)
   
@@ -124,6 +127,16 @@ function parseAtom(state: ParseState): Expression {
     return expr
   }
   
+  // Check for variable reference (starts with :)
+  if (token.startsWith(':')) {
+    consume(state)
+    const varName = token.slice(1).toLowerCase()
+    if (!varName) {
+      throw new Error('Variable name cannot be empty')
+    }
+    return { type: 'variable', name: varName }
+  }
+  
   const num = Number(token)
   if (!Number.isFinite(num)) {
     throw new Error(`Invalid number: ${token}`)
@@ -134,17 +147,25 @@ function parseAtom(state: ParseState): Expression {
 }
 
 // Evaluate an expression to a number
-export function evaluateExpression(expr: Expression): number {
+export function evaluateExpression(expr: Expression, variables: VariableContext = new Map()): number {
   switch (expr.type) {
     case 'number':
       return expr.value
     
+    case 'variable': {
+      const value = variables.get(expr.name)
+      if (value === undefined) {
+        throw new Error(`Undefined variable: ${expr.name}`)
+      }
+      return value
+    }
+    
     case 'unary':
-      return -evaluateExpression(expr.operand)
+      return -evaluateExpression(expr.operand, variables)
     
     case 'binary': {
-      const left = evaluateExpression(expr.left)
-      const right = evaluateExpression(expr.right)
+      const left = evaluateExpression(expr.left, variables)
+      const right = evaluateExpression(expr.right, variables)
       
       switch (expr.op) {
         case '+': return left + right

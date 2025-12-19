@@ -27,7 +27,8 @@ const aliasToKind: Record<string, TurtleCommandKind> = {
   SETXY: 'SETXY',
   SETH: 'SETH',
   SETHEADING: 'SETH',
-  HOME: "HOME"
+  HOME: "HOME",
+  MAKE: 'MAKE',
 }
 
 function rangeForSegment(lineNumber: number, startCol: number, endCol: number): SourceRange {
@@ -137,6 +138,36 @@ export function parseTurtle(source: string): ParseResult {
               diagnostics.push(diagnostic(`Invalid expression: ${expr2Text}`, segRange))
             } else {
               commands.push({ kind, value: expr1, value2: expr2, sourceLine: lineNumber })
+            }
+          }
+        } else if (kind === 'MAKE') {
+          // MAKE requires "varname expression
+          const argsText = trimmed.slice(cmdRaw.length).trim()
+          
+          if (!argsText.startsWith('"')) {
+            diagnostics.push(diagnostic('MAKE requires quoted variable name: MAKE "varname expression', segRange))
+          } else {
+            const restText = argsText.slice(1).trim()
+            const spaceIdx = restText.search(/\s/)
+            
+            if (spaceIdx === -1) {
+              diagnostics.push(diagnostic('MAKE requires variable name and expression', segRange))
+            } else {
+              const varName = restText.slice(0, spaceIdx).toLowerCase()
+              const exprText = restText.slice(spaceIdx).trim()
+              
+              if (!varName) {
+                diagnostics.push(diagnostic('Variable name cannot be empty', segRange))
+              } else if (!exprText) {
+                diagnostics.push(diagnostic('MAKE requires an expression', segRange))
+              } else {
+                const expr = parseExpression(exprText)
+                if (!expr) {
+                  diagnostics.push(diagnostic(`Invalid expression: ${exprText}`, segRange))
+                } else {
+                  commands.push({ kind, varName, value: expr, sourceLine: lineNumber })
+                }
+              }
             }
           }
         } else {

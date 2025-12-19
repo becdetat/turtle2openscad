@@ -11,7 +11,7 @@ Client-side web app that converts a small Turtle script into OpenSCAD `polygon(p
 
 ## Turtle language
 
-Only a very small subset of the Berkeley Logo dialect is included. At the moment only basic movement and pen up/down commands are supported.
+Only a very small subset of the Berkeley Logo dialect is included, concentrating on commands and syntax that support drawing.
 
 - Command separators: newline and `;`
 - Single line comments: `# ...` and `// ...` (to end of line)
@@ -31,10 +31,15 @@ Only a very small subset of the Berkeley Logo dialect is included. At the moment
   - `SETH` / `SETHEADING <deg>` - turn the turtle to a new absolute heading, relative to the Y axis
   - `HOME` - move the turtle to the origin (0, 0) and set the heading to 0 degrees relative to the Y axis
 - Note that commands that take more than one argument require a comma between arguments
-- The following binary mathematical operations are supported: `+`, `-`, `*`, `/`, `^`
-- Unary mathematical minus is supported: `FORWARD -10` (equivalent to `BACK 10`)
+- The following binary arithmetic operations are supported: `+`, `-`, `*`, `/`, `^`
+- Unary minus is supported: `FORWARD -10` (equivalent to `BACK 10`)
 - Brackets are supported for explicit operator precedence: `LEFT (10+20)*3` (equivalent to `LEFT 90`)
-
+- Variables can be defined (using `MAKE "variable_name 10` - note the quote mark prefix to indicate the new variable name) and used in arithmetic operations (using a colon prefix like `:variable_name` to reference the variable):
+  ```
+  MAKE "size 100
+  FD :size
+  MAKE "half :size / 2; FD :half;
+  ```
 
 Invalid statements are reported and skipped; execution continues.
 
