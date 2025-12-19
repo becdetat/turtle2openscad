@@ -4,21 +4,15 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import PauseIcon from '@mui/icons-material/Pause'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import SettingsIcon from '@mui/icons-material/Settings'
-import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import {
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Divider,
   IconButton,
   Paper,
   Slider,
   Stack,
-  TextField,
   Typography,
 } from '@mui/material'
 import { alpha, useTheme } from '@mui/material/styles'
@@ -32,13 +26,13 @@ import { clamp } from './helpers/clamp'
 import { drawPreview } from './turtle/drawPreview'
 import { useSettings } from './hooks/useSettings'
 import { HelpDialog } from './components/HelpDialog'
+import { SettingsDialog } from './components/SettingsDialog'
 
 const STORAGE_KEY = 'turtle2openscad:script'
 
 export default function App() {
   const theme = useTheme()
-  const { settings, setSettings, resetArcPoints, DEFAULTS } = useSettings()
-
+  const { settings, reloadSettings } = useSettings()
   const [source, setSource] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
@@ -234,7 +228,23 @@ export default function App() {
   }
 
   const handleSettingsOpen = () => setSettingsOpen(true)
-  const handleSettingsClose = () => setSettingsOpen(false)
+  
+  const handleSettingsClose = () => {
+    setSettingsOpen(false)
+    // Reload settings from localStorage to pick up changes from dialog
+    reloadSettings()
+    // Update preview if it was already showing
+    if (activeSegments.length > 0) {
+      // Wait for next render cycle after settings reload
+      setTimeout(() => {
+        setActiveSegments(runResultRef.current.segments)
+        setProgress(0)
+        lastTsRef.current = null
+        setIsPlaying(true)
+      }, 0)
+    }
+  }
+  
   const handleHelpOpen = () => setHelpOpen(true)
   const handleHelpClose = () => setHelpOpen(false)
 
@@ -393,48 +403,7 @@ export default function App() {
         </Paper>
       </Box>
 
-      <Dialog open={settingsOpen} onClose={handleSettingsClose} maxWidth="sm">
-        <DialogTitle>Settings</DialogTitle>
-        <DialogContent>
-          <Stack spacing={3} sx={{ pt: 1 }}>
-            <Stack spacing={1}>
-              <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
-                <Typography variant="subtitle2">Points per 90° of arc</Typography>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <IconButton
-                    size="small"
-                    onClick={resetArcPoints}
-                    aria-label="Reset to default"
-                    disabled={settings.arcPointsPer90Deg === DEFAULTS.arcPointsPer90Deg}
-                  >
-                    <RestartAltIcon fontSize="small" />
-                  </IconButton>
-                  <TextField
-                    type="number"
-                    value={settings.arcPointsPer90Deg}
-                    onChange={(e) => {
-                      const val = Number(e.target.value)
-                      if (Number.isFinite(val) && val > 0) {
-                        setSettings({ arcPointsPer90Deg: val })
-                      }
-                    }}
-                    size="small"
-                    inputProps={{ min: 1, step: 1 }}
-                    sx={{ width: 120 }}
-                  />
-                </Stack>
-              </Stack>
-              <Typography variant="caption" color="text.secondary">
-                Default: {DEFAULTS.arcPointsPer90Deg}
-              </Typography>
-            </Stack>
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleSettingsClose}>Close</Button>
-        </DialogActions>
-      </Dialog>
-
+      <SettingsDialog open={settingsOpen} onClose={handleSettingsClose} />
       <HelpDialog open={helpOpen} onClose={handleHelpClose} />
     </Box>
   )

@@ -43,9 +43,13 @@ export function useSettings() {
     setSettingsState((prev) => ({ ...prev, ...partial }))
   }, [])
 
+  const reloadSettings = useCallback(() => {
+    setSettingsState(loadSettings())
+  }, [])
+
   const resetArcPoints = useCallback(() => {
     setSettings({ arcPointsPer90Deg: DEFAULTS.arcPointsPer90Deg })
   }, [setSettings])
 
-  return { settings, setSettings, resetArcPoints, DEFAULTS }
+  return { settings, setSettings, reloadSettings, resetArcPoints, DEFAULTS }
 }
