@@ -86,6 +86,31 @@ npm install
 npm run dev
 ```
 
+## Testing
+
+The project uses Vitest for unit testing. Tests cover the core turtle graphics modules:
+
+- **parser.test.ts** - Tests the turtle script parser for commands, comments, expressions, variables, and REPEAT loops
+- **interpreter.test.ts** - Tests the turtle interpreter for movement, turning, polygons, arcs, and state management
+- **openscad.test.ts** - Tests OpenSCAD code generation including polygon output, comments, and number formatting
+- **drawPreview.test.ts** - Tests canvas preview rendering including segment drawing, viewport scaling, and animation
+
+Run tests:
+
+```pwsh
+# Run tests in watch mode (recommended during development)
+npm test
+
+# Run tests once
+npm run test:run
+
+# Run tests with interactive UI
+npm run test:ui
+
+# Generate coverage report
+npm run test:coverage
+```
+
 ## Build
 
 ```pwsh
