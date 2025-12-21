@@ -30,6 +30,7 @@ export function LogoEditor(props: LogoEditorProps) {
             <Box sx={{ px: 2, py: 1 }}>
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
                     <Typography variant="subtitle1">Turtle Script</Typography>
+                    <small><kbd>Ctrl</kbd>+<kbd>Enter</kbd> to preview</small>
                     <IconButton aria-label="Help" onClick={props.onHelpOpen} size="small">
                         <HelpOutlineIcon fontSize="small" />
                     </IconButton>
