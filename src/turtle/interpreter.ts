@@ -121,10 +121,10 @@ export function executeTurtle(
         break
       }
       case 'LT':
-        headingDeg += cmd.value ? evaluateExpression(cmd.value, variables) : 0
+        headingDeg -= cmd.value ? evaluateExpression(cmd.value, variables) : 0
         break
       case 'RT':
-        headingDeg -= cmd.value ? evaluateExpression(cmd.value, variables) : 0
+        headingDeg += cmd.value ? evaluateExpression(cmd.value, variables) : 0
         break
       case 'SETH':
         headingDeg = cmd.value ? evaluateExpression(cmd.value, variables) : 0

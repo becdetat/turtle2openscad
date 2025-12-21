@@ -48,8 +48,8 @@ describe('interpreter', () => {
       const { commands } = parseTurtle('LT 90\nFD 10')
       const result = executeTurtle(commands, defaultOptions, [])
       
-      // LT 90 increases heading to 90° (clockwise), pointing right (+X)
-      expect(result.segments[0].to.x).toBeCloseTo(10)
+      // LT 90 decreases heading to -90° (counterclockwise), pointing left (-X)
+      expect(result.segments[0].to.x).toBeCloseTo(-10)
       expect(result.segments[0].to.y).toBeCloseTo(0)
     })
 
@@ -57,8 +57,8 @@ describe('interpreter', () => {
       const { commands } = parseTurtle('RT 90\nFD 10')
       const result = executeTurtle(commands, defaultOptions, [])
       
-      // RT 90 decreases heading to -90° (counterclockwise), pointing left (-X)
-      expect(result.segments[0].to.x).toBeCloseTo(-10)
+      // RT 90 increases heading to 90° (clockwise), pointing right (+X)
+      expect(result.segments[0].to.x).toBeCloseTo(10)
       expect(result.segments[0].to.y).toBeCloseTo(0)
     })
 
