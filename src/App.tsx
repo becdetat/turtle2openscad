@@ -39,10 +39,20 @@ export default function App(props: AppProps) {
   const [hasAutoPlayed, setHasAutoPlayed] = useState(false)
 
   const parseResult = useMemo(() => parseTurtle(source), [source])
-  const runResult = useMemo(
-    () => executeTurtle(parseResult.commands, { arcPointsPer90Deg: settings.arcPointsPer90Deg }, parseResult.comments),
-    [parseResult.commands, settings.arcPointsPer90Deg, parseResult.comments],
-  )
+  const runResult = useMemo(() => {
+    try {
+      return executeTurtle(parseResult.commands, { arcPointsPer90Deg: settings.arcPointsPer90Deg }, parseResult.comments)
+    } catch (error) {
+      // Add runtime error to diagnostics
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      parseResult.diagnostics.push({
+        message: `Runtime error: ${errorMessage}`,
+        range: { startLine: 1, startColumn: 1, endLine: 1, endColumn: 1 }
+      })
+      // Return empty result
+      return { segments: [], polygons: [] }
+    }
+  }, [parseResult, settings.arcPointsPer90Deg])
   const openScad = useMemo(() => generateOpenScad(runResult.polygons), [runResult.polygons])
 
   useEffect(() => {
