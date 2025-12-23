@@ -261,8 +261,12 @@ export function executeTurtle(
           const targetIndex = currentPolygon!.length === 1 ? 0 : currentPolygon!.length
           const existing = currentPolygonCommentsByPointIndex.get(targetIndex) || []
           currentPolygonCommentsByPointIndex.set(targetIndex, [...existing, positionComment])
+        } else {
+          // When pen is up, create a comment-only polygon
+          // This ensures comments are output even when not drawing geometry
+          ensurePolygonStarted()
+          currentPolygonComments.push(positionComment)
         }
-        // Note: When pen is up, position comments are not associated with any polygon
         break
       }
       case 'REPEAT': {
@@ -289,6 +293,9 @@ export function executeTurtle(
     if (maxLine >= polygonStartLine) {
       collectCommentsSince(polygonStartLine, maxLine + 1)
     }
+    finalizePolygon()
+  } else if (currentPolygon) {
+    // Also finalize if there's a polygon but pen is up (e.g., comment-only polygon)
     finalizePolygon()
   }
 

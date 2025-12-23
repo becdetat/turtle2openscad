@@ -348,11 +348,11 @@ describe('interpreter', () => {
       const { commands, comments } = parseTurtle('PU\nSETXY 10, 20\nEXTCOMMENTPOS [Pen up position]')
       const result = executeTurtle(commands, defaultOptions, comments)
       
-      // PU finalizes the initial polygon, then pen is up so no new polygon is started
-      expect(result.polygons).toHaveLength(1)
-      // The position comment should not be in this polygon since it was created with pen up
-      expect(result.polygons[0].comments.length).toBe(0)
-      expect(result.polygons[0].commentsByPointIndex.size).toBe(0)
+      // PU finalizes the initial polygon, then EXTCOMMENTPOS creates a new comment-only polygon
+      expect(result.polygons).toHaveLength(2)
+      // The position comment should be in the second polygon's comments array
+      expect(result.polygons[1].comments.length).toBe(1)
+      expect(result.polygons[1].comments[0].text).toBe('// Pen up position: x=10, y=20')
     })
 
     it('should handle multiple EXTCOMMENTPOS commands', () => {
@@ -388,6 +388,31 @@ describe('interpreter', () => {
       
       const cornerComments = allComments.filter(c => c.includes('Corner'))
       expect(cornerComments.length).toBe(2)
+    })
+
+    it('should output comments when pen is up between polygons', () => {
+      const { commands, comments } = parseTurtle('PD\nFD 10\nPU\nEXTCOMMENTPOS [111]\nPD\nFD 10\nEXTCOMMENTPOS [222]\nPU\nEXTCOMMENTPOS [333]')
+      const result = executeTurtle(commands, defaultOptions, comments)
+      
+      // Should have 4 polygons: 
+      // 1. First geometry (FD 10)
+      // 2. Comment-only polygon for [111]
+      // 3. Second geometry (FD 10) with [222]
+      // 4. Comment-only polygon for [333]
+      expect(result.polygons.length).toBeGreaterThanOrEqual(3)
+      
+      // Check that all three comments are present somewhere in the polygons
+      const allComments: string[] = []
+      result.polygons.forEach(poly => {
+        poly.comments.forEach(c => allComments.push(c.text))
+        poly.commentsByPointIndex.forEach(comments => {
+          comments.forEach(c => allComments.push(c.text))
+        })
+      })
+      
+      expect(allComments.some(c => c.includes('111'))).toBe(true)
+      expect(allComments.some(c => c.includes('222'))).toBe(true)
+      expect(allComments.some(c => c.includes('333'))).toBe(true)
     })
   })
 })
