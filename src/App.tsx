@@ -2,10 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type * as Monaco from 'monaco-editor'
 import type { OnMount } from '@monaco-editor/react'
 import { Box, Divider } from '@mui/material'
-import { executeTurtle } from './turtle/interpreter'
-import { generateOpenScad } from './turtle/openscad'
-import { parseTurtle } from './turtle/parser'
-import { defaultTurtleScript } from './turtle/sample'
+import { executeLogo } from './logo/interpreter'
+import { generateOpenScad } from './logo/openscad'
+import { parseLogo } from './logo/parser'
+import { defaultLogoScript } from './logo/sample'
 import { useSettings } from './hooks/useSettings'
 import { HelpDialog } from './components/HelpDialog'
 import { SettingsDialog } from './components/SettingsDialog'
@@ -25,9 +25,9 @@ export default function App(props: AppProps) {
   const [source, setSource] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
-      return saved ?? defaultTurtleScript
+      return saved ?? defaultLogoScript
     } catch {
-      return defaultTurtleScript
+      return defaultLogoScript
     }
   })
   const [isPlaying, setIsPlaying] = useState(false)
@@ -35,13 +35,13 @@ export default function App(props: AppProps) {
   const [progress, setProgress] = useState(0)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [helpOpen, setHelpOpen] = useState(false)
-  const [activeSegments, setActiveSegments] = useState<ReturnType<typeof executeTurtle>['segments']>([])
+  const [activeSegments, setActiveSegments] = useState<ReturnType<typeof executeLogo>['segments']>([])
   const [hasAutoPlayed, setHasAutoPlayed] = useState(false)
 
-  const parseResult = useMemo(() => parseTurtle(source), [source])
+  const parseResult = useMemo(() => parseLogo(source), [source])
   const runResult = useMemo(() => {
     try {
-      return executeTurtle(parseResult.commands, { arcPointsPer90Deg: settings.arcPointsPer90Deg }, parseResult.comments)
+      return executeLogo(parseResult.commands, { arcPointsPer90Deg: settings.arcPointsPer90Deg }, parseResult.comments)
     } catch (error) {
       // Add runtime error to diagnostics
       const errorMessage = error instanceof Error ? error.message : String(error)
@@ -162,7 +162,7 @@ export default function App(props: AppProps) {
       endColumn: d.range.endColumn,
     }))
 
-    monaco.editor.setModelMarkers(model, 'turtle', markers)
+    monaco.editor.setModelMarkers(model, 'logo', markers)
 
     const errorLines = Array.from(new Set(parseResult.diagnostics.map((d) => d.range.startLine)))
     const decorations = errorLines.map((line) => ({

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { generateOpenScad } from '../src/turtle/openscad'
-import type { TurtlePolygon } from '../src/turtle/types'
+import { generateOpenScad } from '../src/logo/openscad'
+import type { LogoPolygon } from '../src/logo/types'
 
 describe('openscad', () => {
   describe('basic polygon generation', () => {
     it('should generate OpenSCAD for a simple polygon', () => {
-      const polygons: TurtlePolygon[] = [
+      const polygons: LogoPolygon[] = [
         {
           points: [
             { x: 0, y: 0 },
@@ -29,7 +29,7 @@ describe('openscad', () => {
     })
 
     it('should close polygons automatically', () => {
-      const polygons: TurtlePolygon[] = [
+      const polygons: LogoPolygon[] = [
         {
           points: [
             { x: 0, y: 0 },
@@ -49,7 +49,7 @@ describe('openscad', () => {
     })
 
     it('should not duplicate closing point if already closed', () => {
-      const polygons: TurtlePolygon[] = [
+      const polygons: LogoPolygon[] = [
         {
           points: [
             { x: 0, y: 0 },
@@ -71,7 +71,7 @@ describe('openscad', () => {
 
   describe('multiple polygons', () => {
     it('should generate multiple polygon blocks', () => {
-      const polygons: TurtlePolygon[] = [
+      const polygons: LogoPolygon[] = [
         {
           points: [
             { x: 0, y: 0 },
@@ -101,7 +101,7 @@ describe('openscad', () => {
     })
 
     it('should separate polygons with double newline', () => {
-      const polygons: TurtlePolygon[] = [
+      const polygons: LogoPolygon[] = [
         {
           points: [{ x: 0, y: 0 }, { x: 10, y: 0 }],
           comments: [],
@@ -122,7 +122,7 @@ describe('openscad', () => {
 
   describe('number formatting', () => {
     it('should format numbers with appropriate precision', () => {
-      const polygons: TurtlePolygon[] = [
+      const polygons: LogoPolygon[] = [
         {
           points: [
             { x: 1.123456789, y: 2.987654321 },
@@ -141,7 +141,7 @@ describe('openscad', () => {
     })
 
     it('should handle negative numbers', () => {
-      const polygons: TurtlePolygon[] = [
+      const polygons: LogoPolygon[] = [
         {
           points: [
             { x: -10, y: -20 },
@@ -158,7 +158,7 @@ describe('openscad', () => {
     })
 
     it('should trim trailing zeros', () => {
-      const polygons: TurtlePolygon[] = [
+      const polygons: LogoPolygon[] = [
         {
           points: [
             { x: 10.5, y: 20.0 },
@@ -176,7 +176,7 @@ describe('openscad', () => {
 
   describe('comments', () => {
     it('should include polygon-level comments', () => {
-      const polygons: TurtlePolygon[] = [
+      const polygons: LogoPolygon[] = [
         {
           points: [
             { x: 0, y: 0 },
@@ -198,7 +198,7 @@ describe('openscad', () => {
       const commentsByPointIndex = new Map<number, Array<{ text: string; line: number }>>()
       commentsByPointIndex.set(1, [{ text: '// At second point', line: 2 }])
 
-      const polygons: TurtlePolygon[] = [
+      const polygons: LogoPolygon[] = [
         {
           points: [
             { x: 0, y: 0 },
@@ -220,7 +220,7 @@ describe('openscad', () => {
     })
 
     it('should handle multi-line comments', () => {
-      const polygons: TurtlePolygon[] = [
+      const polygons: LogoPolygon[] = [
         {
           points: [{ x: 0, y: 0 }, { x: 10, y: 0 }],
           comments: [
@@ -244,7 +244,7 @@ describe('openscad', () => {
         { text: '// Second comment', line: 2 },
       ])
 
-      const polygons: TurtlePolygon[] = [
+      const polygons: LogoPolygon[] = [
         {
           points: [{ x: 0, y: 0 }, { x: 10, y: 0 }],
           comments: [],
@@ -268,7 +268,7 @@ describe('openscad', () => {
     })
 
     it('should handle polygon with single point', () => {
-      const polygons: TurtlePolygon[] = [
+      const polygons: LogoPolygon[] = [
         {
           points: [],
           comments: [],
@@ -283,7 +283,7 @@ describe('openscad', () => {
     })
 
     it('should format commas correctly', () => {
-      const polygons: TurtlePolygon[] = [
+      const polygons: LogoPolygon[] = [
         {
           points: [
             { x: 0, y: 0 },
@@ -312,7 +312,7 @@ describe('openscad', () => {
       const commentsByPointIndex = new Map<number, Array<{ text: string; line: number }>>()
       commentsByPointIndex.set(0, [{ text: '// Position: x=0, y=0', line: 1 }])
 
-      const polygons: TurtlePolygon[] = [
+      const polygons: LogoPolygon[] = [
         {
           points: [
             { x: 0, y: 0 },
@@ -336,7 +336,7 @@ describe('openscad', () => {
       const commentsByPointIndex = new Map<number, Array<{ text: string; line: number }>>()
       commentsByPointIndex.set(1, [{ text: '// Screw hole 1: x=7.071068, y=7.071068', line: 2 }])
 
-      const polygons: TurtlePolygon[] = [
+      const polygons: LogoPolygon[] = [
         {
           points: [
             { x: 0, y: 0 },

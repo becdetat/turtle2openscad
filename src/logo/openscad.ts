@@ -1,11 +1,11 @@
-import type { Point, TurtlePolygon } from './types'
+import type { Point, LogoPolygon } from './types'
 import { formatNum } from './utils'
 
 function pointsEqual(a: Point, b: Point) {
   return a.x === b.x && a.y === b.y
 }
 
-export function generateOpenScad(polygons: TurtlePolygon[]): string {
+export function generateOpenScad(polygons: LogoPolygon[]): string {
   if (polygons.length === 0) return '// No polygons'
 
   const blocks: string[] = []

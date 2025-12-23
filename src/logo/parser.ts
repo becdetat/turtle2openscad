@@ -1,14 +1,14 @@
 import type {
   ParseResult,
   SourceRange,
-  TurtleCommand,
-  TurtleCommandKind,
-  TurtleComment,
-  TurtleDiagnostic,
+  LogoCommand,
+  LogoCommandKind,
+  LogoComment,
+  LogoDiagnostic,
 } from './types'
 import { parseExpression } from './expression'
 
-const aliasToKind: Record<string, TurtleCommandKind> = {
+const aliasToKind: Record<string, LogoCommandKind> = {
   FD: 'FD',
   FORWARD: 'FD',
   BK: 'BK',
@@ -31,6 +31,7 @@ const aliasToKind: Record<string, TurtleCommandKind> = {
   MAKE: 'MAKE',
   REPEAT: 'REPEAT',
   EXTCOMMENTPOS: 'EXTCOMMENTPOS',
+  PRINT: 'PRINT',
 }
 
 function rangeForSegment(lineNumber: number, startCol: number, endCol: number): SourceRange {
@@ -42,14 +43,14 @@ function rangeForSegment(lineNumber: number, startCol: number, endCol: number): 
   }
 }
 
-function diagnostic(message: string, range: SourceRange): TurtleDiagnostic {
+function diagnostic(message: string, range: SourceRange): LogoDiagnostic {
   return { message, range }
 }
 
-export function parseTurtle(source: string): ParseResult {
-  const commands: TurtleCommand[] = []
-  const diagnostics: TurtleDiagnostic[] = []
-  const comments: TurtleComment[] = []
+export function parseLogo(source: string): ParseResult {
+  const commands: LogoCommand[] = []
+  const diagnostics: LogoDiagnostic[] = []
+  const comments: LogoComment[] = []
 
   // First pass: extract multi-line comments and remove them from source
   let processedSource = source
@@ -247,6 +248,92 @@ export function parseTurtle(source: string): ParseResult {
             }
           } else {
             diagnostics.push(diagnostic('EXTCOMMENTPOS optional parameter must be in brackets: EXTCOMMENTPOS [comment]', segRange))
+          }
+        } else if (kind === 'PRINT') {
+          // PRINT takes comma-separated arguments: strings [text], variables :var, or expressions
+          const argsText = trimmed.slice(cmdRaw.length).trim()
+          
+          if (!argsText) {
+            diagnostics.push(diagnostic('PRINT requires at least one argument', segRange))
+          } else {
+            // Parse comma-separated arguments
+            const printArgs: import('./types').PrintArg[] = []
+            let currentPos = 0
+            let hasError = false
+            
+            while (currentPos < argsText.length) {
+              // Skip whitespace
+              while (currentPos < argsText.length && /\s/.test(argsText[currentPos])) {
+                currentPos++
+              }
+              
+              if (currentPos >= argsText.length) break
+              
+              // Check if this is a bracketed string
+              if (argsText[currentPos] === '[') {
+                let bracketDepth = 0
+                let bracketEnd = -1
+                for (let i = currentPos; i < argsText.length; i++) {
+                  if (argsText[i] === '[') bracketDepth++
+                  else if (argsText[i] === ']') {
+                    bracketDepth--
+                    if (bracketDepth === 0) {
+                      bracketEnd = i
+                      break
+                    }
+                  }
+                }
+                
+                if (bracketEnd === -1) {
+                  diagnostics.push(diagnostic('PRINT string missing closing bracket ]', segRange))
+                  hasError = true
+                  break
+                }
+                
+                const stringValue = argsText.slice(currentPos + 1, bracketEnd)
+                printArgs.push({ type: 'string', value: stringValue })
+                currentPos = bracketEnd + 1
+              } else {
+                // Parse as expression until comma or end
+                let exprEnd = currentPos
+                let bracketDepth = 0
+                while (exprEnd < argsText.length) {
+                  if (argsText[exprEnd] === '[') bracketDepth++
+                  else if (argsText[exprEnd] === ']') bracketDepth--
+                  else if (argsText[exprEnd] === ',' && bracketDepth === 0) break
+                  exprEnd++
+                }
+                
+                const exprText = argsText.slice(currentPos, exprEnd).trim()
+                if (!exprText) {
+                  diagnostics.push(diagnostic('PRINT argument cannot be empty', segRange))
+                  hasError = true
+                  break
+                }
+                
+                const expr = parseExpression(exprText)
+                if (!expr) {
+                  diagnostics.push(diagnostic(`Invalid PRINT expression: ${exprText}`, segRange))
+                  hasError = true
+                  break
+                }
+                
+                printArgs.push({ type: 'expression', expr })
+                currentPos = exprEnd
+              }
+              
+              // Skip comma
+              while (currentPos < argsText.length && /\s/.test(argsText[currentPos])) {
+                currentPos++
+              }
+              if (currentPos < argsText.length && argsText[currentPos] === ',') {
+                currentPos++
+              }
+            }
+            
+            if (!hasError && printArgs.length > 0) {
+              commands.push({ kind, printArgs, sourceLine: lineNumber })
+            }
           }
         } else if (kind === 'REPEAT') {
           // REPEAT requires num [instructionlist]

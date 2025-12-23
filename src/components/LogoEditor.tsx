@@ -3,7 +3,7 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import Editor from '@monaco-editor/react'
 import type { OnMount } from '@monaco-editor/react'
 import { alpha, useTheme } from "@mui/material/styles";
-import type { ParseResult } from "../turtle/types";
+import type { ParseResult } from "../logo/types";
 
 export type LogoEditorProps = {
     source: string;
@@ -29,7 +29,7 @@ export function LogoEditor(props: LogoEditorProps) {
         >
             <Box sx={{ px: 2, py: 1 }}>
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
-                    <Typography variant="subtitle1">Turtle Script</Typography>
+                    <Typography variant="subtitle1">Logo</Typography>
                     <small><kbd>Ctrl</kbd>+<kbd>Enter</kbd> to preview</small>
                     <IconButton aria-label="Help" onClick={props.onHelpOpen} size="small">
                         <HelpOutlineIcon fontSize="small" />

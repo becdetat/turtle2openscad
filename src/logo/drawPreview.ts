@@ -1,9 +1,9 @@
-import type { TurtleSegment } from './types.js'
+import type { LogoSegment } from './types.js'
 
 export function drawPreview(
   ctx: CanvasRenderingContext2D,
   canvas: HTMLCanvasElement,
-  segments: TurtleSegment[],
+  segments: LogoSegment[],
   visibleSegments: number,
   colors: {
     penDown: string
@@ -63,7 +63,7 @@ export function drawPreview(
   const fullCount = Math.floor(visibleSegments)
   const frac = visibleSegments - fullCount
 
-  const drawSeg = (s: TurtleSegment, t: number) => {
+  const drawSeg = (s: LogoSegment, t: number) => {
     const a = toScreen(s.from)
     const b = toScreen(s.to)
     const x = a.x + (b.x - a.x) * t

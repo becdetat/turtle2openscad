@@ -1,8 +1,8 @@
-export const helpContent = `# Turtle2OpenSCAD Help
+export const helpContent = `# Logo2OpenSCAD Help
 
 ## Overview
 
-Turtle2OpenSCAD is a client-side web app that converts Turtle/Logo scripts into OpenSCAD \`polygon(points=[...])\` output.
+Logo2OpenSCAD is a client-side web app that converts Logo scripts into OpenSCAD \`polygon(points=[...])\` output.
 
 ### Coordinate System
 - **Origin**: (0, 0)
@@ -255,6 +255,40 @@ This is a multi-line comment
 It can span multiple lines
 */
 FD 100
+\`\`\`
+
+### EXTCOMMENTPOS \`[text]\`
+Insert a comment into the OpenSCAD output at the turtle's current position. Useful for 
+annotating specific points in the drawing. The comment text is enclosed in square brackets
+and is optional.
+
+\`\`\`logo
+EXTCOMMENTPOS [Corner point]
+FD 50
+EXTCOMMENTPOS           // Without text
+\`\`\`
+
+### PRINT \`arg1, arg2, ...\`
+Output text as a single-line comment in the OpenSCAD output. Arguments are comma-separated and can be:
+- **Strings in brackets**: \`[text]\`
+- **Variables**: \`:varname\`
+- **Expressions**: \`10 + 20\` or \`:size * 2\`
+
+Multiple arguments are output space-separated.
+
+\`\`\`logo
+PRINT [Hello, World!]
+
+MAKE "x 100
+PRINT [X:], :x
+// Output: // X: 100
+
+PRINT [Size:], :x, [doubled:], :x * 2
+// Output: // Size: 100 doubled: 200
+
+PRINT [Starting the square]
+REPEAT 4 [FD 50; RT 90]
+PRINT [Square complete]
 \`\`\`
 
 ---

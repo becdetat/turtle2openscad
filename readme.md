@@ -1,17 +1,17 @@
-# Turtle2OpenSCAD
+# Logo2OpenSCAD
 
-Client-side web app that converts a small Turtle script into OpenSCAD `polygon(points=[...])` output.
+Client-side web app that converts a small Logo "turtle" script into OpenSCAD `polygon(points=[...])` output.
 
 ## Features
 
-- 3 panes: Turtle script editor (Monaco), animated preview (Play/Pause), generated OpenSCAD output (read-only) with Copy button
+- 3 panes: Logo script editor (Monaco), animated preview (Play/Pause), generated OpenSCAD output (read-only) with Copy button
 - Turtle defaults: origin `(0, 0)`, heading up, degrees, pen down
 - Supports multiple polygons via `PU`/`PD`
 - Pen-up travel is shown dashed in the preview
 
-## Turtle language
+## Logo language
 
-Only a very small subset of the Berkeley Logo dialect is included, concentrating on commands and syntax that support drawing.
+Only a very small subset of the Berkeley Logo dialect is included, concentrating on commands and syntax that support drawing (turtle commands).
 
 - Command separators: newline and `;`
 - Single line comments: `# ...` and `// ...` (to end of line)
@@ -30,6 +30,7 @@ Only a very small subset of the Berkeley Logo dialect is included, concentrating
   - `SETXY <n>, <n>` - move the turtle to the absolute X and Y coordinates
   - `SETH` / `SETHEADING <deg>` - turn the turtle to a new absolute heading, relative to the Y axis
   - `HOME` - move the turtle to the origin (0, 0) and set the heading to 0 degrees relative to the Y axis
+  - `PRINT <arg1>, <arg2>, ...` - output text as a single-line comment in the OpenSCAD output. Arguments can be strings in brackets `[text]`, variables `:varname`, or expressions. Multiple arguments are comma-separated and output space-separated.
 - Note that commands that take more than one argument require a comma between arguments
 - The following binary arithmetic operations are supported: `+`, `-`, `*`, `/`, `^`
 - Unary minus is supported: `FORWARD -10` (equivalent to `BACK 10`)
@@ -76,22 +77,21 @@ Only a very small subset of the Berkeley Logo dialect is included, concentrating
 
 Invalid statements are reported and skipped; execution continues.
 
-See the [Issues](https://github.com/becdetat/turtle2openscad/issues) for more commands that are planned for implementation. Because of the scope of the project I'm not planning on making this into a full Logo dialect parser. The `LOOP` command is probably as complex as is needed.
+See the [Issues](https://github.com/becdetat/logo2openscad/issues) for more commands that are planned for implementation. Because of the scope of the project I'm not planning on making this into a full Logo dialect parser. The `LOOP` command is probably as complex as is needed.
 
 ## Local development
 
 ```pwsh
-Set-Location "c:\development\becdetat\turtle2openscad"
 npm install
 npm run dev
 ```
 
 ## Testing
 
-The project uses Vitest for unit testing. Tests cover the core turtle graphics modules:
+The project uses Vitest for unit testing. Tests cover the core Logo graphics modules:
 
-- **parser.test.ts** - Tests the turtle script parser for commands, comments, expressions, variables, and REPEAT loops
-- **interpreter.test.ts** - Tests the turtle interpreter for movement, turning, polygons, arcs, and state management
+- **parser.test.ts** - Tests the Logo script parser for commands, comments, expressions, variables, and REPEAT loops
+- **interpreter.test.ts** - Tests the Logo interpreter for movement, turning, polygons, arcs, and state management
 - **openscad.test.ts** - Tests OpenSCAD code generation including polygon output, comments, and number formatting
 - **drawPreview.test.ts** - Tests canvas preview rendering including segment drawing, viewport scaling, and animation
 
@@ -114,7 +114,6 @@ npm run test:coverage
 ## Build
 
 ```pwsh
-Set-Location "c:\development\becdetat\turtle2openscad"
 npm run build
 npm run preview
 ```
@@ -124,45 +123,35 @@ npm run preview
 Build and run locally:
 
 ```pwsh
-Set-Location "c:\development\becdetat\turtle2openscad"
-docker build -t turtle2openscad:local .
-docker run --rm -p 8080:80 turtle2openscad:local
+docker build -t logo2openscad:local .
+docker run --rm -p 8080:80 logo2openscad:local
 ```
 
 Then open `http://localhost:8080`.
 
 ### Build + push to Docker Hub
 
-1) Create a Docker Hub repo (e.g. `YOUR_DOCKERHUB_USER/turtle2openscad`).
-
-2) Login:
+1) Log in, build + tag:
 
 ```pwsh
 docker login
+docker build -t "becdetat/logo2openscad:0.6.0" .
+docker tag "becdetat/logo2openscad:0.6.0" "becdetat/logo2openscad:latest"
 ```
 
-3) Build + tag:
+2) Push:
 
 ```pwsh
-$USER = "YOUR_DOCKERHUB_USER"
-$TAG = "0.1.0"
-docker build -t "$USER/turtle2openscad:$TAG" .
-docker tag "$USER/turtle2openscad:$TAG" "$USER/turtle2openscad:latest"
+docker push "becdetat/logo2openscad:0.6.0"
+docker push "becdetat/logo2openscad:latest"
 ```
 
-4) Push:
-
-```pwsh
-docker push "$USER/turtle2openscad:$TAG"
-docker push "$USER/turtle2openscad:latest"
-```
-
-## Docker Compose
+## Example Docker Compose
 ```yml
 services:
-  turtle2openscad:
-    image: becdetat/turtle2openscad:latest
-    container_name: turtle2openscad
+  logo2openscad:
+    image: becdetat/logo2openscad:latest
+    container_name: logo2openscad
     ports:
       - 8080:80
     restart: unless-stopped
