@@ -11,7 +11,7 @@ Client-side web app that converts a small Logo "turtle" script into OpenSCAD `po
 
 ## Logo language
 
-Only a very small subset of the Berkeley Logo dialect is included, concentrating on commands and syntax that support drawing (turtle commands).
+Only a very small, mangled subset of the [Berkeley Logo](https://people.eecs.berkeley.edu/~bh/usermanual) dialect is included, concentrating on commands and syntax that support drawing (turtle commands).
 
 - Command separators: newline and `;`
 - Single line comments: `# ...` and `// ...` (to end of line)
@@ -77,7 +77,7 @@ Only a very small subset of the Berkeley Logo dialect is included, concentrating
 
 Invalid statements are reported and skipped; execution continues.
 
-See the [Issues](https://github.com/becdetat/logo2openscad/issues) for more commands that are planned for implementation. Because of the scope of the project I'm not planning on making this into a full Logo dialect parser. The `LOOP` command is probably as complex as is needed.
+See [Issues](https://github.com/becdetat/logo2openscad/issues) for more commands that are planned for implementation. Because of the scope of the project I'm not planning on making this into a full Logo dialect parser.
 
 ## Local development
 
@@ -131,20 +131,27 @@ Then open `http://localhost:8080`.
 
 ### Build + push to Docker Hub
 
-1) Log in, build + tag:
+1) Tag a new release in Git
+```pwsh
+git tag 0.6.0
+git push origin 0.6.0
+```
 
+2) Docker log in, build + tag:
 ```pwsh
 docker login
 docker build -t "becdetat/logo2openscad:0.6.0" .
 docker tag "becdetat/logo2openscad:0.6.0" "becdetat/logo2openscad:latest"
 ```
 
-2) Push:
-
+3) Push:
 ```pwsh
 docker push "becdetat/logo2openscad:0.6.0"
 docker push "becdetat/logo2openscad:latest"
 ```
+
+4) Create new release in Github
+
 
 ## Example Docker Compose
 ```yml
