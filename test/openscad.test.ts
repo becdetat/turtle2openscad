@@ -306,4 +306,54 @@ describe('openscad', () => {
       expect(almostLastPointLine).toBeTruthy()
     })
   })
+
+  describe('EXTCOMMENTPOS integration', () => {
+    it('should output position comment in OpenSCAD format', () => {
+      const commentsByPointIndex = new Map<number, Array<{ text: string; line: number }>>()
+      commentsByPointIndex.set(0, [{ text: '// Position: x=0, y=0', line: 1 }])
+
+      const polygons: TurtlePolygon[] = [
+        {
+          points: [
+            { x: 0, y: 0 },
+            { x: 10, y: 0 },
+          ],
+          comments: [],
+          commentsByPointIndex,
+        },
+      ]
+
+      const result = generateOpenScad(polygons)
+
+      expect(result).toContain('// Position: x=0, y=0')
+      // Comment should appear before the first point
+      const commentIndex = result.indexOf('// Position: x=0, y=0')
+      const firstPointIndex = result.indexOf('[0, 0]')
+      expect(commentIndex).toBeLessThan(firstPointIndex)
+    })
+
+    it('should output custom label position comment', () => {
+      const commentsByPointIndex = new Map<number, Array<{ text: string; line: number }>>()
+      commentsByPointIndex.set(1, [{ text: '// Screw hole 1: x=7.071068, y=7.071068', line: 2 }])
+
+      const polygons: TurtlePolygon[] = [
+        {
+          points: [
+            { x: 0, y: 0 },
+            { x: 7.071068, y: 7.071068 },
+          ],
+          comments: [],
+          commentsByPointIndex,
+        },
+      ]
+
+      const result = generateOpenScad(polygons)
+
+      expect(result).toContain('// Screw hole 1: x=7.071068, y=7.071068')
+      // Comment should appear before the second point
+      const commentIndex = result.indexOf('// Screw hole 1')
+      const secondPointIndex = result.indexOf('[7.071068, 7.071068]')
+      expect(commentIndex).toBeLessThan(secondPointIndex)
+    })
+  })
 })

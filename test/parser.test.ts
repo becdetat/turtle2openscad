@@ -235,4 +235,58 @@ describe('parser', () => {
       expect(result.commands).toHaveLength(0)
     })
   })
+
+  describe('EXTCOMMENTPOS command', () => {
+    it('should parse EXTCOMMENTPOS without parameters', () => {
+      const result = parseTurtle('EXTCOMMENTPOS')
+      expect(result.commands).toHaveLength(1)
+      expect(result.commands[0].kind).toBe('EXTCOMMENTPOS')
+      expect(result.commands[0].comment).toBeUndefined()
+      expect(result.diagnostics).toHaveLength(0)
+    })
+
+    it('should parse EXTCOMMENTPOS with comment parameter in brackets', () => {
+      const result = parseTurtle('EXTCOMMENTPOS [Screw hole 1]')
+      expect(result.commands).toHaveLength(1)
+      expect(result.commands[0].kind).toBe('EXTCOMMENTPOS')
+      expect(result.commands[0].comment).toBe('Screw hole 1')
+      expect(result.diagnostics).toHaveLength(0)
+    })
+
+    it('should parse EXTCOMMENTPOS with empty brackets', () => {
+      const result = parseTurtle('EXTCOMMENTPOS []')
+      expect(result.commands).toHaveLength(1)
+      expect(result.commands[0].kind).toBe('EXTCOMMENTPOS')
+      expect(result.commands[0].comment).toBe('')
+      expect(result.diagnostics).toHaveLength(0)
+    })
+
+    it('should report error for EXTCOMMENTPOS with unclosed bracket', () => {
+      const result = parseTurtle('EXTCOMMENTPOS [comment')
+      expect(result.diagnostics.length).toBeGreaterThan(0)
+      expect(result.diagnostics[0].message).toContain('missing closing bracket')
+    })
+
+    it('should report error for EXTCOMMENTPOS with parameter not in brackets', () => {
+      const result = parseTurtle('EXTCOMMENTPOS comment')
+      expect(result.diagnostics.length).toBeGreaterThan(0)
+      expect(result.diagnostics[0].message).toContain('must be in brackets')
+    })
+
+    it('should parse EXTCOMMENTPOS with complex comment text', () => {
+      const result = parseTurtle('EXTCOMMENTPOS [Position at: corner 1, layer 2]')
+      expect(result.commands).toHaveLength(1)
+      expect(result.commands[0].kind).toBe('EXTCOMMENTPOS')
+      expect(result.commands[0].comment).toBe('Position at: corner 1, layer 2')
+      expect(result.diagnostics).toHaveLength(0)
+    })
+
+    it('should parse EXTCOMMENTPOS with nested brackets in comment', () => {
+      const result = parseTurtle('EXTCOMMENTPOS [Position [corner]]')
+      expect(result.commands).toHaveLength(1)
+      expect(result.commands[0].kind).toBe('EXTCOMMENTPOS')
+      expect(result.commands[0].comment).toBe('Position [corner]')
+      expect(result.diagnostics).toHaveLength(0)
+    })
+  })
 })

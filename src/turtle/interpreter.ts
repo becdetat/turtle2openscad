@@ -9,6 +9,7 @@ import type {
 } from './types'
 import { evaluateExpression, type VariableContext } from './expression'
 import { parseTurtle } from './parser'
+import { formatNum } from './utils'
 
 function degToRad(deg: number) {
   return (deg * Math.PI) / 180
@@ -38,6 +39,7 @@ export function executeTurtle(
   const finalizePolygon = () => {
     if (!currentPolygon) return
     if (currentPolygon.length === 0) currentPolygon.push({ x, y })
+    
     polygons.push({ 
       points: currentPolygon, 
       comments: currentPolygonComments,
@@ -244,6 +246,30 @@ export function executeTurtle(
         }
         break
       }
+      case 'EXTCOMMENTPOS': {
+        // Generate a comment with the current position
+        const label = cmd.comment || 'Position'
+        const commentText = `// ${label}: x=${formatNum(x)}, y=${formatNum(y)}`
+        const positionComment: TurtleComment = { text: commentText, line: cmdLine }
+        
+        if (penDown) {
+          ensurePolygonStarted()
+          // Determine where to place the comment in the output:
+          // - If at initial position (length=1, only origin point), place at index 0 (before origin)
+          // - Otherwise, place at currentPolygon.length (before the next point to be added)
+          // This ensures comments appear right at the current position in the output
+          const targetIndex = currentPolygon!.length === 1 ? 0 : currentPolygon!.length
+          const existing = currentPolygonCommentsByPointIndex.get(targetIndex) || []
+          currentPolygonCommentsByPointIndex.set(targetIndex, [...existing, positionComment])
+        } else {
+          // When pen is up, create a comment-only polygon to ensure the comment is output
+          // This will create a single-point polygon at the current position that serves
+          // only as a container for the comment in the OpenSCAD output
+          ensurePolygonStarted()
+          currentPolygonComments.push(positionComment)
+        }
+        break
+      }
       case 'REPEAT': {
         if (cmd.value && cmd.instructionList !== undefined) {
           const count = Math.floor(evaluateExpression(cmd.value, variables))
@@ -268,6 +294,9 @@ export function executeTurtle(
     if (maxLine >= polygonStartLine) {
       collectCommentsSince(polygonStartLine, maxLine + 1)
     }
+    finalizePolygon()
+  } else if (currentPolygon) {
+    // Also finalize if there's a polygon but pen is up (e.g., comment-only polygon)
     finalizePolygon()
   }
 

@@ -286,4 +286,133 @@ describe('interpreter', () => {
       expect(result.polygons[0].commentsByPointIndex.size).toBeGreaterThan(0)
     })
   })
+
+  describe('EXTCOMMENTPOS command', () => {
+    it('should generate position comment at origin', () => {
+      const { commands, comments } = parseTurtle('EXTCOMMENTPOS')
+      const result = executeTurtle(commands, defaultOptions, comments)
+      
+      expect(result.polygons).toHaveLength(1)
+      // Comment should be in commentsByPointIndex for the next point (index 0)
+      const commentsAtPoint = result.polygons[0].commentsByPointIndex.get(0)
+      expect(commentsAtPoint).toBeDefined()
+      expect(commentsAtPoint!.length).toBe(1)
+      expect(commentsAtPoint![0].text).toBe('// Position: x=0, y=0')
+    })
+
+    it('should generate position comment with custom label', () => {
+      const { commands, comments } = parseTurtle('EXTCOMMENTPOS [Screw hole 1]')
+      const result = executeTurtle(commands, defaultOptions, comments)
+      
+      expect(result.polygons).toHaveLength(1)
+      const commentsAtPoint = result.polygons[0].commentsByPointIndex.get(0)
+      expect(commentsAtPoint).toBeDefined()
+      expect(commentsAtPoint![0].text).toBe('// Screw hole 1: x=0, y=0')
+    })
+
+    it('should generate position comment after movement', () => {
+      const { commands, comments } = parseTurtle('SETXY 0, 0\nRT 45\nFD 10\nEXTCOMMENTPOS')
+      const result = executeTurtle(commands, defaultOptions, comments)
+      
+      expect(result.polygons).toHaveLength(1)
+      // After SETXY and FD, there are 3 points (0, 1, 2). Comment should appear after point 2, which is at index 3
+      const commentsAtPoint = result.polygons[0].commentsByPointIndex.get(3)
+      expect(commentsAtPoint).toBeDefined()
+      expect(commentsAtPoint![0].text).toContain('x=7.071068')
+      expect(commentsAtPoint![0].text).toContain('y=7.071068')
+    })
+
+    it('should format numbers with 6 decimal places and trim trailing zeros', () => {
+      const { commands, comments } = parseTurtle('SETXY 7.071067811865476, 7.071067811865476\nEXTCOMMENTPOS')
+      const result = executeTurtle(commands, defaultOptions, comments)
+      
+      // SETXY adds point 1, so comment should be at index 2
+      const commentsAtPoint = result.polygons[0].commentsByPointIndex.get(2)
+      expect(commentsAtPoint).toBeDefined()
+      expect(commentsAtPoint![0].text).toContain('x=7.071068')
+      expect(commentsAtPoint![0].text).toContain('y=7.071068')
+    })
+
+    it('should place comment before next point when pen is down', () => {
+      const { commands, comments } = parseTurtle('FD 10\nEXTCOMMENTPOS [After first line]\nFD 10')
+      const result = executeTurtle(commands, defaultOptions, comments)
+      
+      expect(result.polygons).toHaveLength(1)
+      // Comment should appear before the second point (index 2)
+      const commentsAtPoint = result.polygons[0].commentsByPointIndex.get(2)
+      expect(commentsAtPoint).toBeDefined()
+      expect(commentsAtPoint![0].text).toBe('// After first line: x=0, y=10')
+    })
+
+    it('should add comment to polygon comments when pen is up', () => {
+      const { commands, comments } = parseTurtle('PU\nSETXY 10, 20\nEXTCOMMENTPOS [Pen up position]')
+      const result = executeTurtle(commands, defaultOptions, comments)
+      
+      // PU finalizes the initial polygon, then EXTCOMMENTPOS creates a new comment-only polygon
+      expect(result.polygons).toHaveLength(2)
+      // The position comment should be in the second polygon's comments array
+      expect(result.polygons[1].comments.length).toBe(1)
+      expect(result.polygons[1].comments[0].text).toBe('// Pen up position: x=10, y=20')
+    })
+
+    it('should handle multiple EXTCOMMENTPOS commands', () => {
+      const { commands, comments } = parseTurtle('EXTCOMMENTPOS [Start]\nFD 10\nEXTCOMMENTPOS [Middle]\nFD 10\nEXTCOMMENTPOS [End]')
+      const result = executeTurtle(commands, defaultOptions, comments)
+      
+      expect(result.polygons).toHaveLength(1)
+      // Should have comments at indices 0, 2, and 3
+      // Start at origin (index 0), Middle after first FD (index 2), End after second FD (index 3)
+      const comments0 = result.polygons[0].commentsByPointIndex.get(0)
+      const comments2 = result.polygons[0].commentsByPointIndex.get(2)
+      const comments3 = result.polygons[0].commentsByPointIndex.get(3)
+      
+      expect(comments0).toBeDefined()
+      expect(comments2).toBeDefined()
+      expect(comments3).toBeDefined()
+      
+      expect(comments0![0].text).toContain('Start')
+      expect(comments2![0].text).toContain('Middle')
+      expect(comments3![0].text).toContain('End')
+    })
+
+    it('should work within REPEAT loops', () => {
+      const { commands, comments } = parseTurtle('REPEAT 2 [FD 10; EXTCOMMENTPOS [Corner]; RT 90]')
+      const result = executeTurtle(commands, defaultOptions, comments)
+      
+      expect(result.polygons).toHaveLength(1)
+      // Should have position comments from both iterations
+      const allComments: string[] = []
+      result.polygons[0].commentsByPointIndex.forEach((comments) => {
+        comments.forEach((c) => allComments.push(c.text))
+      })
+      
+      const cornerComments = allComments.filter(c => c.includes('Corner'))
+      expect(cornerComments.length).toBe(2)
+    })
+
+    it('should output comments when pen is up between polygons', () => {
+      const { commands, comments } = parseTurtle('PD\nFD 10\nPU\nEXTCOMMENTPOS [111]\nPD\nFD 10\nEXTCOMMENTPOS [222]\nPU\nEXTCOMMENTPOS [333]')
+      const result = executeTurtle(commands, defaultOptions, comments)
+      
+      // Should have 4 polygons: 
+      // 1. First geometry (FD 10)
+      // 2. Comment-only polygon for [111]
+      // 3. Second geometry (FD 10) with [222]
+      // 4. Comment-only polygon for [333]
+      expect(result.polygons.length).toBeGreaterThanOrEqual(3)
+      
+      // Check that all three comments are present somewhere in the polygons
+      const allComments: string[] = []
+      result.polygons.forEach(poly => {
+        poly.comments.forEach(c => allComments.push(c.text))
+        poly.commentsByPointIndex.forEach(comments => {
+          comments.forEach(c => allComments.push(c.text))
+        })
+      })
+      
+      expect(allComments.some(c => c.includes('111'))).toBe(true)
+      expect(allComments.some(c => c.includes('222'))).toBe(true)
+      expect(allComments.some(c => c.includes('333'))).toBe(true)
+    })
+  })
 })
