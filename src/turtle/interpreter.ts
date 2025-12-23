@@ -254,14 +254,15 @@ export function executeTurtle(
         
         if (penDown) {
           ensurePolygonStarted()
-          // Special case: if at initial position with no moves yet, attach to index 0
-          // Otherwise, attach before the next point to be added
+          // Determine where to place the comment in the output:
+          // - If at initial position (length=1, only origin point), place at index 0 (before origin)
+          // - Otherwise, place at currentPolygon.length (before the next point to be added)
+          // This ensures comments appear right at the current position in the output
           const targetIndex = currentPolygon!.length === 1 ? 0 : currentPolygon!.length
           const existing = currentPolygonCommentsByPointIndex.get(targetIndex) || []
           currentPolygonCommentsByPointIndex.set(targetIndex, [...existing, positionComment])
-        } else {
-          // If pen is up, the comment doesn't go into any polygon
         }
+        // Note: When pen is up, position comments are not associated with any polygon
         break
       }
       case 'REPEAT': {
