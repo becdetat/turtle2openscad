@@ -1,4 +1,4 @@
-export const defaultTurtleScript = `// Square
+export const defaultLogoScript = `// Square
 pendown;
 forward 50;
 right 90;

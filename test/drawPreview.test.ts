@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest'
-import { drawPreview } from '../src/turtle/drawPreview'
-import type { TurtleSegment } from '../src/turtle/types'
+import { drawPreview } from '../src/logo/drawPreview'
+import type { LogoSegment } from '../src/logo/types'
 
 describe('drawPreview', () => {
   let canvas: HTMLCanvasElement
@@ -41,14 +41,14 @@ describe('drawPreview', () => {
 
   describe('basic rendering', () => {
     it('should clear the canvas', () => {
-      const segments: TurtleSegment[] = []
+      const segments: LogoSegment[] = []
       drawPreview(ctx, canvas, segments, 0, colors)
 
       expect(mockContext.clearRect).toHaveBeenCalledWith(0, 0, 800, 600)
     })
 
     it('should handle empty segments array', () => {
-      const segments: TurtleSegment[] = []
+      const segments: LogoSegment[] = []
       drawPreview(ctx, canvas, segments, 0, colors)
 
       expect(mockContext.clearRect).toHaveBeenCalled()
@@ -57,7 +57,7 @@ describe('drawPreview', () => {
     })
 
     it('should draw axes when segments exist', () => {
-      const segments: TurtleSegment[] = [
+      const segments: LogoSegment[] = [
         {
           from: { x: 0, y: 0 },
           to: { x: 100, y: 0 },
@@ -79,7 +79,7 @@ describe('drawPreview', () => {
 
   describe('segment rendering', () => {
     it('should render pen down segments with solid line', () => {
-      const segments: TurtleSegment[] = [
+      const segments: LogoSegment[] = [
         {
           from: { x: 0, y: 0 },
           to: { x: 100, y: 0 },
@@ -101,7 +101,7 @@ describe('drawPreview', () => {
     })
 
     it('should render pen up segments with dashed line', () => {
-      const segments: TurtleSegment[] = [
+      const segments: LogoSegment[] = [
         {
           from: { x: 0, y: 0 },
           to: { x: 100, y: 0 },
@@ -118,7 +118,7 @@ describe('drawPreview', () => {
     })
 
     it('should render multiple segments', () => {
-      const segments: TurtleSegment[] = [
+      const segments: LogoSegment[] = [
         {
           from: { x: 0, y: 0 },
           to: { x: 100, y: 0 },
@@ -139,7 +139,7 @@ describe('drawPreview', () => {
     })
 
     it('should only render visible segments', () => {
-      const segments: TurtleSegment[] = [
+      const segments: LogoSegment[] = [
         {
           from: { x: 0, y: 0 },
           to: { x: 100, y: 0 },
@@ -169,7 +169,7 @@ describe('drawPreview', () => {
 
   describe('partial segment rendering', () => {
     it('should render partial segment with fractional progress', () => {
-      const segments: TurtleSegment[] = [
+      const segments: LogoSegment[] = [
         {
           from: { x: 0, y: 0 },
           to: { x: 100, y: 0 },
@@ -185,7 +185,7 @@ describe('drawPreview', () => {
     })
 
     it('should handle arc segments specially', () => {
-      const segments: TurtleSegment[] = [
+      const segments: LogoSegment[] = [
         {
           from: { x: 0, y: 0 },
           to: { x: 10, y: 10 },
@@ -210,7 +210,7 @@ describe('drawPreview', () => {
 
   describe('viewport scaling', () => {
     it('should scale to fit all segments', () => {
-      const segments: TurtleSegment[] = [
+      const segments: LogoSegment[] = [
         {
           from: { x: -100, y: -100 },
           to: { x: 100, y: 100 },
@@ -225,7 +225,7 @@ describe('drawPreview', () => {
     })
 
     it('should handle very small spans', () => {
-      const segments: TurtleSegment[] = [
+      const segments: LogoSegment[] = [
         {
           from: { x: 0, y: 0 },
           to: { x: 0.001, y: 0.001 },
@@ -240,7 +240,7 @@ describe('drawPreview', () => {
     })
 
     it('should center the drawing', () => {
-      const segments: TurtleSegment[] = [
+      const segments: LogoSegment[] = [
         {
           from: { x: 100, y: 100 },
           to: { x: 200, y: 200 },
@@ -256,7 +256,7 @@ describe('drawPreview', () => {
     })
 
     it('should apply padding', () => {
-      const segments: TurtleSegment[] = [
+      const segments: LogoSegment[] = [
         {
           from: { x: 0, y: 0 },
           to: { x: 1000, y: 1000 },
@@ -274,7 +274,7 @@ describe('drawPreview', () => {
 
   describe('turtle head', () => {
     it('should draw turtle head at current position', () => {
-      const segments: TurtleSegment[] = [
+      const segments: LogoSegment[] = [
         {
           from: { x: 0, y: 0 },
           to: { x: 100, y: 0 },
@@ -296,7 +296,7 @@ describe('drawPreview', () => {
     })
 
     it('should position turtle head at partial segment end', () => {
-      const segments: TurtleSegment[] = [
+      const segments: LogoSegment[] = [
         {
           from: { x: 0, y: 0 },
           to: { x: 100, y: 0 },
@@ -312,7 +312,7 @@ describe('drawPreview', () => {
     })
 
     it('should use penDown color for turtle head', () => {
-      const segments: TurtleSegment[] = [
+      const segments: LogoSegment[] = [
         {
           from: { x: 0, y: 0 },
           to: { x: 100, y: 0 },
@@ -335,7 +335,7 @@ describe('drawPreview', () => {
         axis: '#0000ff',
       }
 
-      const segments: TurtleSegment[] = [
+      const segments: LogoSegment[] = [
         {
           from: { x: 0, y: 0 },
           to: { x: 100, y: 0 },
@@ -351,7 +351,7 @@ describe('drawPreview', () => {
 
   describe('context state management', () => {
     it('should save and restore context state', () => {
-      const segments: TurtleSegment[] = [
+      const segments: LogoSegment[] = [
         {
           from: { x: 0, y: 0 },
           to: { x: 100, y: 0 },
@@ -367,7 +367,7 @@ describe('drawPreview', () => {
     })
 
     it('should set line width', () => {
-      const segments: TurtleSegment[] = [
+      const segments: LogoSegment[] = [
         {
           from: { x: 0, y: 0 },
           to: { x: 100, y: 0 },

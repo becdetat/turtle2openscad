@@ -1,4 +1,4 @@
-// Shared utility functions for turtle graphics
+// Shared utility functions for Logo graphics
 
 /**
  * Format a number with 6 decimal places, trimming trailing zeros

@@ -1,14 +1,14 @@
 import type {
   ParseResult,
   SourceRange,
-  TurtleCommand,
-  TurtleCommandKind,
-  TurtleComment,
-  TurtleDiagnostic,
+  LogoCommand,
+  LogoCommandKind,
+  LogoComment,
+  LogoDiagnostic,
 } from './types'
 import { parseExpression } from './expression'
 
-const aliasToKind: Record<string, TurtleCommandKind> = {
+const aliasToKind: Record<string, LogoCommandKind> = {
   FD: 'FD',
   FORWARD: 'FD',
   BK: 'BK',
@@ -42,14 +42,14 @@ function rangeForSegment(lineNumber: number, startCol: number, endCol: number): 
   }
 }
 
-function diagnostic(message: string, range: SourceRange): TurtleDiagnostic {
+function diagnostic(message: string, range: SourceRange): LogoDiagnostic {
   return { message, range }
 }
 
-export function parseTurtle(source: string): ParseResult {
-  const commands: TurtleCommand[] = []
-  const diagnostics: TurtleDiagnostic[] = []
-  const comments: TurtleComment[] = []
+export function parseLogo(source: string): ParseResult {
+  const commands: LogoCommand[] = []
+  const diagnostics: LogoDiagnostic[] = []
+  const comments: LogoComment[] = []
 
   // First pass: extract multi-line comments and remove them from source
   let processedSource = source

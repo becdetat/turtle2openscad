@@ -2,16 +2,16 @@ import { Box, Button, Divider, Paper, Slider, Stack, Typography } from "@mui/mat
 import PauseIcon from '@mui/icons-material/Pause'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import { useEffect, useRef } from "react";
-import type { TurtleSegment } from "../turtle/types";
+import type { LogoSegment } from "../logo/types";
 import { alpha, useTheme } from "@mui/material/styles";
-import { drawPreview } from "../turtle/drawPreview";
+import { drawPreview } from "../logo/drawPreview";
 import { clamp } from "../helpers/clamp";
 
 export type PreviewProps = {
     isPlaying: boolean;
     speed: number;
     progress: number;
-    activeSegments: TurtleSegment[];
+    activeSegments: LogoSegment[];
     hasSegments: boolean;
     onPlay: () => void;
     onPause: () => void;

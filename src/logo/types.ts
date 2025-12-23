@@ -6,7 +6,7 @@ export type Expression =
   | { type: 'variable'; name: string }
   | { type: 'function'; name: string; arg: Expression }
 
-export type TurtleCommandKind = 'FD' | 'BK' | 'LT' | 'RT' | 'PU' | 'PD' | 'ARC' | 'SETX' | 'SETY' | 'SETXY' | 'SETH' | "HOME" | 'MAKE' | 'REPEAT' | 'EXTCOMMENTPOS'
+export type LogoCommandKind = 'FD' | 'BK' | 'LT' | 'RT' | 'PU' | 'PD' | 'ARC' | 'SETX' | 'SETY' | 'SETXY' | 'SETH' | "HOME" | 'MAKE' | 'REPEAT' | 'EXTCOMMENTPOS'
 
 export type SourceRange = {
   startLine: number
@@ -15,13 +15,13 @@ export type SourceRange = {
   endColumn: number
 }
 
-export type TurtleDiagnostic = {
+export type LogoDiagnostic = {
   message: string
   range: SourceRange
 }
 
-export type TurtleCommand = {
-  kind: TurtleCommandKind
+export type LogoCommand = {
+  kind: LogoCommandKind
   value?: Expression
   value2?: Expression
   varName?: string  // For MAKE command
@@ -30,7 +30,7 @@ export type TurtleCommand = {
   sourceLine?: number
 }
 
-export type TurtleComment = {
+export type LogoComment = {
   text: string
   line: number
   endLine?: number  // For multi-line comments, tracks where they end
@@ -38,28 +38,28 @@ export type TurtleComment = {
 
 export type Point = { x: number; y: number }
 
-export type TurtleSegment = {
+export type LogoSegment = {
   from: Point
   to: Point
   penDown: boolean
   arcGroup?: number
 }
 
-export type TurtlePolygon = {
+export type LogoPolygon = {
   points: Point[]
-  comments: TurtleComment[]
-  commentsByPointIndex: Map<number, TurtleComment[]>  // Comments to appear before each point index
+  comments: LogoComment[]
+  commentsByPointIndex: Map<number, LogoComment[]>  // Comments to appear before each point index
 }
 
 export type ParseResult = {
-  commands: TurtleCommand[]
-  diagnostics: TurtleDiagnostic[]
-  comments: TurtleComment[]
+  commands: LogoCommand[]
+  diagnostics: LogoDiagnostic[]
+  comments: LogoComment[]
 }
 
 export type ExecuteResult = {
-  segments: TurtleSegment[]
-  polygons: TurtlePolygon[]
+  segments: LogoSegment[]
+  polygons: LogoPolygon[]
 }
 
 export type ExecuteOptions = {

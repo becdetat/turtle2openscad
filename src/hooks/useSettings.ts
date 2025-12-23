@@ -8,7 +8,7 @@ const DEFAULTS: Settings = {
   arcPointsPer90Deg: 10,
 }
 
-const STORAGE_KEY = 'turtle2openscad:settings'
+const STORAGE_KEY = 'logo2openscad:settings'
 
 function loadSettings(): Settings {
   try {

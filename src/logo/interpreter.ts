@@ -2,26 +2,26 @@ import type {
   ExecuteOptions,
   ExecuteResult,
   Point,
-  TurtleCommand,
-  TurtleComment,
-  TurtlePolygon,
-  TurtleSegment,
+  LogoCommand,
+  LogoComment,
+  LogoPolygon,
+  LogoSegment,
 } from './types'
 import { evaluateExpression, type VariableContext } from './expression'
-import { parseTurtle } from './parser'
+import { parseLogo } from './parser'
 import { formatNum } from './utils'
 
 function degToRad(deg: number) {
   return (deg * Math.PI) / 180
 }
 
-export function executeTurtle(
-  commands: TurtleCommand[],
+export function executeLogo(
+  commands: LogoCommand[],
   options: ExecuteOptions,
-  allComments: TurtleComment[],
+  allComments: LogoComment[],
 ): ExecuteResult {
-  const segments: TurtleSegment[] = []
-  const polygons: TurtlePolygon[] = []
+  const segments: LogoSegment[] = []
+  const polygons: LogoPolygon[] = []
   const variables: VariableContext = new Map()
 
   let x = 0
@@ -31,8 +31,8 @@ export function executeTurtle(
   let arcGroupId = 0
 
   let currentPolygon: Point[] | null = [{ x, y }]
-  let currentPolygonComments: TurtleComment[] = []
-  let currentPolygonCommentsByPointIndex: Map<number, TurtleComment[]> = new Map()
+  let currentPolygonComments: LogoComment[] = []
+  let currentPolygonCommentsByPointIndex: Map<number, LogoComment[]> = new Map()
   let polygonStartLine = 1
   let usedCommentIndices: Set<number> = new Set()
 
@@ -56,7 +56,7 @@ export function executeTurtle(
   }
 
   const collectCommentsSince = (fromLine: number, toLine: number) => {
-    const collected: TurtleComment[] = []
+    const collected: LogoComment[] = []
     for (let i = 0; i < allComments.length; i++) {
       if (usedCommentIndices.has(i)) continue
       const c = allComments[i]
@@ -73,7 +73,7 @@ export function executeTurtle(
   }
 
   const collectCommentsBeforeNextPoint = (fromLine: number, toLine: number) => {
-    const commentsForThisPoint: TurtleComment[] = []
+    const commentsForThisPoint: LogoComment[] = []
     for (let i = 0; i < allComments.length; i++) {
       if (usedCommentIndices.has(i)) continue
       const c = allComments[i]
@@ -93,13 +93,13 @@ export function executeTurtle(
     }
   }
 
-  const executeCommands = (cmdList: TurtleCommand[]) => {
+  const executeCommands = (cmdList: LogoCommand[]) => {
     for (const cmd of cmdList) {
       executeCommand(cmd)
     }
   }
 
-  const executeCommand = (cmd: TurtleCommand) => {
+  const executeCommand = (cmd: LogoCommand) => {
     const cmdLine = cmd.sourceLine ?? 0
 
     // Collect comments up to this command line
@@ -250,7 +250,7 @@ export function executeTurtle(
         // Generate a comment with the current position
         const label = cmd.comment || 'Position'
         const commentText = `// ${label}: x=${formatNum(x)}, y=${formatNum(y)}`
-        const positionComment: TurtleComment = { text: commentText, line: cmdLine }
+        const positionComment: LogoComment = { text: commentText, line: cmdLine }
         
         if (penDown) {
           ensurePolygonStarted()
@@ -274,7 +274,7 @@ export function executeTurtle(
         if (cmd.value && cmd.instructionList !== undefined) {
           const count = Math.floor(evaluateExpression(cmd.value, variables))
           if (count > 0) {
-            const repeatResult = parseTurtle(cmd.instructionList)
+            const repeatResult = parseLogo(cmd.instructionList)
             for (let i = 0; i < count; i++) {
               executeCommands(repeatResult.commands)
             }

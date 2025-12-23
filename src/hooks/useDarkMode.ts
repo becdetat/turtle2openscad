@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-const STORAGE_KEY = 'turtle2openscad:darkMode'
+const STORAGE_KEY = 'logo2openscad:darkMode'
 
 function loadDarkMode(): boolean {
   try {

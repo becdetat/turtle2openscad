@@ -1,8 +1,8 @@
-export const helpContent = `# Turtle2OpenSCAD Help
+export const helpContent = `# Logo2OpenSCAD Help
 
 ## Overview
 
-Turtle2OpenSCAD is a client-side web app that converts Turtle/Logo scripts into OpenSCAD \`polygon(points=[...])\` output.
+Logo2OpenSCAD is a client-side web app that converts Logo scripts into OpenSCAD \`polygon(points=[...])\` output.
 
 ### Coordinate System
 - **Origin**: (0, 0)
@@ -256,6 +256,11 @@ It can span multiple lines
 */
 FD 100
 \`\`\`
+
+### \`EXTCOMMENTPOS [Hello, world!]]\`
+Insert a comment into the OpenSCAD output at the turtle's current position. Useful for 
+annotating specific points in the drawing. The comment text is enclosed in square brackets
+and is optional.
 
 ---
 
