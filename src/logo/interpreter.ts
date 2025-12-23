@@ -270,6 +270,39 @@ export function executeLogo(
         }
         break
       }
+      case 'PRINT': {
+        // Generate a single-line comment with the evaluated arguments
+        const printArgs = cmd.printArgs || []
+        const parts: string[] = []
+        
+        for (const arg of printArgs) {
+          if (arg.type === 'string') {
+            parts.push(arg.value)
+          } else {
+            const value = evaluateExpression(arg.expr, variables)
+            // Format number with up to 6 decimal places, trimming trailing zeros
+            const formatted = formatNum(value)
+            parts.push(formatted)
+          }
+        }
+        
+        const printText = parts.join(' ')
+        const commentText = `// ${printText}`
+        const printComment: LogoComment = { text: commentText, line: cmdLine }
+        
+        if (penDown) {
+          ensurePolygonStarted()
+          // Place the comment at the current position
+          const targetIndex = currentPolygon!.length === 1 ? 0 : currentPolygon!.length
+          const existing = currentPolygonCommentsByPointIndex.get(targetIndex) || []
+          currentPolygonCommentsByPointIndex.set(targetIndex, [...existing, printComment])
+        } else {
+          // When pen is up, add to polygon-level comments
+          ensurePolygonStarted()
+          currentPolygonComments.push(printComment)
+        }
+        break
+      }
       case 'REPEAT': {
         if (cmd.value && cmd.instructionList !== undefined) {
           const count = Math.floor(evaluateExpression(cmd.value, variables))

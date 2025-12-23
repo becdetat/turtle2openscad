@@ -6,7 +6,7 @@ export type Expression =
   | { type: 'variable'; name: string }
   | { type: 'function'; name: string; arg: Expression }
 
-export type LogoCommandKind = 'FD' | 'BK' | 'LT' | 'RT' | 'PU' | 'PD' | 'ARC' | 'SETX' | 'SETY' | 'SETXY' | 'SETH' | "HOME" | 'MAKE' | 'REPEAT' | 'EXTCOMMENTPOS'
+export type LogoCommandKind = 'FD' | 'BK' | 'LT' | 'RT' | 'PU' | 'PD' | 'ARC' | 'SETX' | 'SETY' | 'SETXY' | 'SETH' | "HOME" | 'MAKE' | 'REPEAT' | 'EXTCOMMENTPOS' | 'PRINT'
 
 export type SourceRange = {
   startLine: number
@@ -20,6 +20,10 @@ export type LogoDiagnostic = {
   range: SourceRange
 }
 
+export type PrintArg = 
+  | { type: 'string'; value: string }
+  | { type: 'expression'; expr: Expression }
+
 export type LogoCommand = {
   kind: LogoCommandKind
   value?: Expression
@@ -27,6 +31,7 @@ export type LogoCommand = {
   varName?: string  // For MAKE command
   instructionList?: string  // For REPEAT command
   comment?: string  // For EXTCOMMENTPOS command
+  printArgs?: PrintArg[]  // For PRINT command
   sourceLine?: number
 }
 

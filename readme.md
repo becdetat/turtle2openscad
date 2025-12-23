@@ -1,6 +1,6 @@
 # Logo2OpenSCAD
 
-Client-side web app that converts a small Logo script into OpenSCAD `polygon(points=[...])` output.
+Client-side web app that converts a small Logo "turtle" script into OpenSCAD `polygon(points=[...])` output.
 
 ## Features
 
@@ -30,6 +30,7 @@ Only a very small subset of the Berkeley Logo dialect is included, concentrating
   - `SETXY <n>, <n>` - move the turtle to the absolute X and Y coordinates
   - `SETH` / `SETHEADING <deg>` - turn the turtle to a new absolute heading, relative to the Y axis
   - `HOME` - move the turtle to the origin (0, 0) and set the heading to 0 degrees relative to the Y axis
+  - `PRINT <arg1>, <arg2>, ...` - output text as a single-line comment in the OpenSCAD output. Arguments can be strings in brackets `[text]`, variables `:varname`, or expressions. Multiple arguments are comma-separated and output space-separated.
 - Note that commands that take more than one argument require a comma between arguments
 - The following binary arithmetic operations are supported: `+`, `-`, `*`, `/`, `^`
 - Unary minus is supported: `FORWARD -10` (equivalent to `BACK 10`)
@@ -81,7 +82,6 @@ See the [Issues](https://github.com/becdetat/logo2openscad/issues) for more comm
 ## Local development
 
 ```pwsh
-Set-Location "c:\development\becdetat\logo2openscad"
 npm install
 npm run dev
 ```
@@ -114,7 +114,6 @@ npm run test:coverage
 ## Build
 
 ```pwsh
-Set-Location "c:\development\becdetat\logo2openscad"
 npm run build
 npm run preview
 ```
@@ -124,7 +123,6 @@ npm run preview
 Build and run locally:
 
 ```pwsh
-Set-Location "c:\development\becdetat\logo2openscad"
 docker build -t logo2openscad:local .
 docker run --rm -p 8080:80 logo2openscad:local
 ```
@@ -133,29 +131,22 @@ Then open `http://localhost:8080`.
 
 ### Build + push to Docker Hub
 
-1) Create a Docker Hub repo (e.g. `YOUR_DOCKERHUB_USER/logo2openscad`).
-
-2) Login:
+1) Log in, build + tag:
 
 ```pwsh
 docker login
+docker build -t "becdetat/logo2openscad:0.6.0" .
+docker tag "becdetat/logo2openscad:0.6.0" "becdetat/logo2openscad:latest"
 ```
 
-3) Build + tag:
-
-```pwsh
-docker build -t "$USER/logo2openscad:0.6.0" .
-docker tag "$USER/logo2openscad:0.6.0" "becdetat/logo2openscad:latest"
-```
-
-4) Push:
+2) Push:
 
 ```pwsh
 docker push "becdetat/logo2openscad:0.6.0"
 docker push "becdetat/logo2openscad:latest"
 ```
 
-## Docker Compose
+## Example Docker Compose
 ```yml
 services:
   logo2openscad:

@@ -289,4 +289,87 @@ describe('parser', () => {
       expect(result.diagnostics).toHaveLength(0)
     })
   })
+
+  describe('PRINT command', () => {
+    it('should parse PRINT with text in brackets', () => {
+      const result = parseLogo('PRINT [Hello, World!]')
+      expect(result.commands).toHaveLength(1)
+      expect(result.commands[0].kind).toBe('PRINT')
+      expect(result.commands[0].printArgs).toHaveLength(1)
+      expect(result.commands[0].printArgs![0].type).toBe('string')
+      expect(result.commands[0].printArgs![0].value).toBe('Hello, World!')
+      expect(result.diagnostics).toHaveLength(0)
+    })
+
+    it('should parse PRINT with variable', () => {
+      const result = parseLogo('PRINT :x')
+      expect(result.commands).toHaveLength(1)
+      expect(result.commands[0].kind).toBe('PRINT')
+      expect(result.commands[0].printArgs).toHaveLength(1)
+      expect(result.commands[0].printArgs![0].type).toBe('expression')
+      expect(result.diagnostics).toHaveLength(0)
+    })
+
+    it('should parse PRINT with expression', () => {
+      const result = parseLogo('PRINT 10 + 20')
+      expect(result.commands).toHaveLength(1)
+      expect(result.commands[0].kind).toBe('PRINT')
+      expect(result.commands[0].printArgs).toHaveLength(1)
+      expect(result.commands[0].printArgs![0].type).toBe('expression')
+      expect(result.diagnostics).toHaveLength(0)
+    })
+
+    it('should parse PRINT with multiple arguments', () => {
+      const result = parseLogo('PRINT [X:], :x, [doubled:], :x * 2')
+      expect(result.commands).toHaveLength(1)
+      expect(result.commands[0].kind).toBe('PRINT')
+      expect(result.commands[0].printArgs).toHaveLength(4)
+      expect(result.commands[0].printArgs![0].type).toBe('string')
+      expect(result.commands[0].printArgs![0].value).toBe('X:')
+      expect(result.commands[0].printArgs![1].type).toBe('expression')
+      expect(result.commands[0].printArgs![2].type).toBe('string')
+      expect(result.commands[0].printArgs![2].value).toBe('doubled:')
+      expect(result.commands[0].printArgs![3].type).toBe('expression')
+      expect(result.diagnostics).toHaveLength(0)
+    })
+
+    it('should parse PRINT with empty brackets', () => {
+      const result = parseLogo('PRINT []')
+      expect(result.commands).toHaveLength(1)
+      expect(result.commands[0].kind).toBe('PRINT')
+      expect(result.commands[0].printArgs).toHaveLength(1)
+      expect(result.commands[0].printArgs![0].type).toBe('string')
+      expect(result.commands[0].printArgs![0].value).toBe('')
+      expect(result.diagnostics).toHaveLength(0)
+    })
+
+    it('should report error for PRINT without arguments', () => {
+      const result = parseLogo('PRINT')
+      expect(result.diagnostics.length).toBeGreaterThan(0)
+      expect(result.diagnostics[0].message).toContain('requires at least one argument')
+    })
+
+    it('should report error for PRINT with unclosed bracket', () => {
+      const result = parseLogo('PRINT [Hello')
+      expect(result.diagnostics.length).toBeGreaterThan(0)
+      expect(result.diagnostics[0].message).toContain('missing closing bracket')
+    })
+
+    it('should parse PRINT with nested brackets', () => {
+      const result = parseLogo('PRINT [Hello [World]]')
+      expect(result.commands).toHaveLength(1)
+      expect(result.commands[0].kind).toBe('PRINT')
+      expect(result.commands[0].printArgs![0].value).toBe('Hello [World]')
+      expect(result.diagnostics).toHaveLength(0)
+    })
+
+    it('should parse PRINT with mixed string and expression', () => {
+      const result = parseLogo('PRINT [Value:], 42')
+      expect(result.commands).toHaveLength(1)
+      expect(result.commands[0].printArgs).toHaveLength(2)
+      expect(result.commands[0].printArgs![0].type).toBe('string')
+      expect(result.commands[0].printArgs![1].type).toBe('expression')
+      expect(result.diagnostics).toHaveLength(0)
+    })
+  })
 })

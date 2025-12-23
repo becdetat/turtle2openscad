@@ -415,4 +415,117 @@ describe('interpreter', () => {
       expect(allComments.some(c => c.includes('333'))).toBe(true)
     })
   })
+
+  describe('PRINT command', () => {
+    it('should output text as a comment', () => {
+      const { commands, comments } = parseLogo('PRINT [Hello, World!]')
+      const result = executeLogo(commands, defaultOptions, comments)
+      
+      expect(result.polygons).toHaveLength(1)
+      const commentsAtPoint = result.polygons[0].commentsByPointIndex.get(0)
+      expect(commentsAtPoint).toBeDefined()
+      expect(commentsAtPoint![0].text).toBe('// Hello, World!')
+    })
+
+    it('should output variable value', () => {
+      const { commands, comments } = parseLogo('MAKE "x 100\nPRINT [X:], :x')
+      const result = executeLogo(commands, defaultOptions, comments)
+      
+      expect(result.polygons).toHaveLength(1)
+      const commentsAtPoint = result.polygons[0].commentsByPointIndex.get(0)
+      expect(commentsAtPoint).toBeDefined()
+      expect(commentsAtPoint![0].text).toBe('// X: 100')
+    })
+
+    it('should output expression result', () => {
+      const { commands, comments } = parseLogo('PRINT [Result:], 10 + 20')
+      const result = executeLogo(commands, defaultOptions, comments)
+      
+      expect(result.polygons).toHaveLength(1)
+      const commentsAtPoint = result.polygons[0].commentsByPointIndex.get(0)
+      expect(commentsAtPoint).toBeDefined()
+      expect(commentsAtPoint![0].text).toBe('// Result: 30')
+    })
+
+    it('should output multiple arguments space-separated', () => {
+      const { commands, comments } = parseLogo('MAKE "size 50\nPRINT [Size:], :size, [doubled:], :size * 2')
+      const result = executeLogo(commands, defaultOptions, comments)
+      
+      expect(result.polygons).toHaveLength(1)
+      const commentsAtPoint = result.polygons[0].commentsByPointIndex.get(0)
+      expect(commentsAtPoint).toBeDefined()
+      expect(commentsAtPoint![0].text).toBe('// Size: 50 doubled: 100')
+    })
+
+    it('should output empty text', () => {
+      const { commands, comments } = parseLogo('PRINT []')
+      const result = executeLogo(commands, defaultOptions, comments)
+      
+      expect(result.polygons).toHaveLength(1)
+      const commentsAtPoint = result.polygons[0].commentsByPointIndex.get(0)
+      expect(commentsAtPoint).toBeDefined()
+      expect(commentsAtPoint![0].text).toBe('// ')
+    })
+
+    it('should output text at current position', () => {
+      const { commands, comments } = parseLogo('FD 50\nPRINT [At 50]\nFD 50')
+      const result = executeLogo(commands, defaultOptions, comments)
+      
+      expect(result.polygons).toHaveLength(1)
+      // After first FD, there are 2 points. PRINT should be at index 2
+      const commentsAtPoint = result.polygons[0].commentsByPointIndex.get(2)
+      expect(commentsAtPoint).toBeDefined()
+      expect(commentsAtPoint![0].text).toBe('// At 50')
+    })
+
+    it('should work with pen up', () => {
+      const { commands, comments } = parseLogo('PU\nPRINT [Pen is up]')
+      const result = executeLogo(commands, defaultOptions, comments)
+      
+      // With pen up and PRINT, it creates a polygon to hold the comment
+      expect(result.polygons.length).toBeGreaterThanOrEqual(1)
+      // Find the polygon with the comment
+      const hasComment = result.polygons.some(p => 
+        p.comments.some(c => c.text === '// Pen is up')
+      )
+      expect(hasComment).toBe(true)
+    })
+
+    it('should output multiple PRINT commands', () => {
+      const { commands, comments } = parseLogo('PRINT [First]\nFD 10\nPRINT [Second]')
+      const result = executeLogo(commands, defaultOptions, comments)
+      
+      expect(result.polygons).toHaveLength(1)
+      
+      // Collect all comments
+      const allComments: string[] = []
+      result.polygons[0].commentsByPointIndex.forEach((comments) => {
+        comments.forEach((c) => allComments.push(c.text))
+      })
+      
+      expect(allComments).toContain('// First')
+      expect(allComments).toContain('// Second')
+    })
+
+    it('should format numbers correctly', () => {
+      const { commands, comments } = parseLogo('PRINT [Pi:], 3.141592653589793')
+      const result = executeLogo(commands, defaultOptions, comments)
+      
+      expect(result.polygons).toHaveLength(1)
+      const commentsAtPoint = result.polygons[0].commentsByPointIndex.get(0)
+      expect(commentsAtPoint).toBeDefined()
+      // Should be limited to 6 decimal places
+      expect(commentsAtPoint![0].text).toBe('// Pi: 3.141593')
+    })
+
+    it('should handle variable in expression', () => {
+      const { commands, comments } = parseLogo('MAKE "x 10\nPRINT [x^2 =], :x ^ 2')
+      const result = executeLogo(commands, defaultOptions, comments)
+      
+      expect(result.polygons).toHaveLength(1)
+      const commentsAtPoint = result.polygons[0].commentsByPointIndex.get(0)
+      expect(commentsAtPoint).toBeDefined()
+      expect(commentsAtPoint![0].text).toBe('// x^2 = 100')
+    })
+  })
 })
