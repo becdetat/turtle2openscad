@@ -14,6 +14,10 @@ function degToRad(deg: number) {
   return (deg * Math.PI) / 180
 }
 
+function formatNum(n: number) {
+  return Number(n.toFixed(6)).toString()
+}
+
 export function executeTurtle(
   commands: TurtleCommand[],
   options: ExecuteOptions,
@@ -38,6 +42,7 @@ export function executeTurtle(
   const finalizePolygon = () => {
     if (!currentPolygon) return
     if (currentPolygon.length === 0) currentPolygon.push({ x, y })
+    
     polygons.push({ 
       points: currentPolygon, 
       comments: currentPolygonComments,
@@ -241,6 +246,24 @@ export function executeTurtle(
         if (penDown) {
           ensurePolygonStarted()
           currentPolygon!.push({ x, y })
+        }
+        break
+      }
+      case 'EXTCOMMENTPOS': {
+        // Generate a comment with the current position
+        const label = cmd.comment || 'Position'
+        const commentText = `// ${label}: x=${formatNum(x)}, y=${formatNum(y)}`
+        const positionComment: TurtleComment = { text: commentText, line: cmdLine }
+        
+        if (penDown) {
+          ensurePolygonStarted()
+          // Special case: if at initial position with no moves yet, attach to index 0
+          // Otherwise, attach before the next point to be added
+          const targetIndex = currentPolygon!.length === 1 ? 0 : currentPolygon!.length
+          const existing = currentPolygonCommentsByPointIndex.get(targetIndex) || []
+          currentPolygonCommentsByPointIndex.set(targetIndex, [...existing, positionComment])
+        } else {
+          // If pen is up, the comment doesn't go into any polygon
         }
         break
       }

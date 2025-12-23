@@ -6,7 +6,7 @@ export type Expression =
   | { type: 'variable'; name: string }
   | { type: 'function'; name: string; arg: Expression }
 
-export type TurtleCommandKind = 'FD' | 'BK' | 'LT' | 'RT' | 'PU' | 'PD' | 'ARC' | 'SETX' | 'SETY' | 'SETXY' | 'SETH' | "HOME" | 'MAKE' | 'REPEAT'
+export type TurtleCommandKind = 'FD' | 'BK' | 'LT' | 'RT' | 'PU' | 'PD' | 'ARC' | 'SETX' | 'SETY' | 'SETXY' | 'SETH' | "HOME" | 'MAKE' | 'REPEAT' | 'EXTCOMMENTPOS'
 
 export type SourceRange = {
   startLine: number
@@ -26,6 +26,7 @@ export type TurtleCommand = {
   value2?: Expression
   varName?: string  // For MAKE command
   instructionList?: string  // For REPEAT command
+  comment?: string  // For EXTCOMMENTPOS command
   sourceLine?: number
 }
 

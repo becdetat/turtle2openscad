@@ -30,6 +30,7 @@ const aliasToKind: Record<string, TurtleCommandKind> = {
   HOME: "HOME",
   MAKE: 'MAKE',
   REPEAT: 'REPEAT',
+  EXTCOMMENTPOS: 'EXTCOMMENTPOS',
 }
 
 function rangeForSegment(lineNumber: number, startCol: number, endCol: number): SourceRange {
@@ -215,6 +216,24 @@ export function parseTurtle(source: string): ParseResult {
                 }
               }
             }
+          }
+        } else if (kind === 'EXTCOMMENTPOS') {
+          // EXTCOMMENTPOS optionally takes [comment text] in brackets
+          const argsText = trimmed.slice(cmdRaw.length).trim()
+          
+          if (!argsText) {
+            // No comment parameter provided
+            commands.push({ kind, sourceLine: lineNumber })
+          } else if (argsText.startsWith('[')) {
+            const bracketEnd = argsText.lastIndexOf(']')
+            if (bracketEnd === -1) {
+              diagnostics.push(diagnostic('EXTCOMMENTPOS comment missing closing bracket ]', segRange))
+            } else {
+              const commentText = argsText.slice(1, bracketEnd).trim()
+              commands.push({ kind, comment: commentText, sourceLine: lineNumber })
+            }
+          } else {
+            diagnostics.push(diagnostic('EXTCOMMENTPOS optional parameter must be in brackets: EXTCOMMENTPOS [comment]', segRange))
           }
         } else if (kind === 'REPEAT') {
           // REPEAT requires num [instructionlist]
