@@ -90,9 +90,17 @@ export default function App(props: AppProps) {
     setIsPlaying(false)
   }
 
+  // Auto-play preview when switching scripts or when segments change
   useEffect(() => {
-    setIsPlaying(false)
-  }, [activeScript.id])
+    if (runResult.segments.length > 0) {
+      setActiveSegments(runResult.segments)
+      setProgress(0)
+      lastTsRef.current = null
+      setIsPlaying(true)
+    } else {
+      setIsPlaying(false)
+    }
+  }, [activeScript.id, runResult.segments])
 
   // Auto-play when runResult first has segments
   useEffect(() => {
