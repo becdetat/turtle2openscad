@@ -144,9 +144,11 @@ export function WorkspaceSidebar(props: WorkspaceSidebarProps) {
                 >
                   <ListItemText 
                     primary={script.name}
-                    primaryTypographyProps={{
-                      noWrap: true,
-                      sx: { pr: 1 }
+                    slotProps={{
+                      primary: {
+                        noWrap: true,
+                        sx: { pr: 1 }
+                      }
                     }}
                   />
                 </ListItemButton>
@@ -155,8 +157,6 @@ export function WorkspaceSidebar(props: WorkspaceSidebarProps) {
           </List>
         </Box>
       </Drawer>
-
-
 
       {/* Context Menu */}
       <Menu
