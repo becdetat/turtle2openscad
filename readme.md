@@ -4,14 +4,18 @@ Client-side web app that converts a small Logo "turtle" script into OpenSCAD `po
 
 ## Features
 
-- 3 panes: Logo script editor (Monaco), animated preview (Play/Pause), generated OpenSCAD output (read-only) with Copy button
-- Turtle defaults: origin `(0, 0)`, heading up, degrees, pen down
-- Supports multiple polygons via `PU`/`PD`
-- Pen-up travel is shown dashed in the preview
+- **Workspace Management**: Create, rename, and delete multiple Logo scripts within a single workspace
+  - Collapsible sidebar for easy script navigation
+  - Auto-save on every change
+  - Automatic migration from older single-script format
+- **3 Panes**: Logo script editor (Monaco), animated preview (Play/Pause), generated OpenSCAD output (read-only) with Copy button
+- **Turtle Defaults**: origin `(0, 0)`, heading up, degrees, pen down
+- **Multiple Polygons**: Supports via `PU`/`PD`
+- **Preview**: Pen-up travel is shown dashed in the preview
 
 ## Logo language
 
-Only a very small subset of the Berkeley Logo dialect is included, concentrating on commands and syntax that support drawing (turtle commands).
+Only a very small, mangled subset of the [Berkeley Logo](https://people.eecs.berkeley.edu/~bh/usermanual) dialect is included, concentrating on commands and syntax that support drawing (turtle commands).
 
 - Command separators: newline and `;`
 - Single line comments: `# ...` and `// ...` (to end of line)
@@ -77,9 +81,20 @@ Only a very small subset of the Berkeley Logo dialect is included, concentrating
 
 Invalid statements are reported and skipped; execution continues.
 
-See the [Issues](https://github.com/becdetat/logo2openscad/issues) for more commands that are planned for implementation. Because of the scope of the project I'm not planning on making this into a full Logo dialect parser. The `LOOP` command is probably as complex as is needed.
+See [Issues](https://github.com/becdetat/logo2openscad/issues) for more commands that are planned for implementation. Because of the scope of the project I'm not planning on making this into a full Logo dialect parser.
 
 ## Local development
+
+### Workspace Storage
+
+The app stores all scripts in browser localStorage under the key `logo2openscad:workspace`. Each workspace contains:
+- Multiple scripts with unique names
+- Script content and metadata (created/updated timestamps)
+- Active script selection
+
+The app automatically migrates from the older single-script format (`turtle2openscad:script`) on first load.
+
+### Development Server
 
 ```pwsh
 npm install
@@ -88,12 +103,14 @@ npm run dev
 
 ## Testing
 
-The project uses Vitest for unit testing. Tests cover the core Logo graphics modules:
+The project uses Vitest for unit testing. Tests cover the core Logo graphics modules and workspace management:
 
 - **parser.test.ts** - Tests the Logo script parser for commands, comments, expressions, variables, and REPEAT loops
 - **interpreter.test.ts** - Tests the Logo interpreter for movement, turning, polygons, arcs, and state management
 - **openscad.test.ts** - Tests OpenSCAD code generation including polygon output, comments, and number formatting
 - **drawPreview.test.ts** - Tests canvas preview rendering including segment drawing, viewport scaling, and animation
+- **useWorkspace.test.ts** - Tests workspace management including CRUD operations, validation, and migration
+- **dialogs.test.tsx** - Tests UI dialogs for script creation, renaming, and deletion
 
 Run tests:
 
@@ -131,20 +148,27 @@ Then open `http://localhost:8080`.
 
 ### Build + push to Docker Hub
 
-1) Log in, build + tag:
+1) Tag a new release in Git
+```pwsh
+git tag 0.6.0
+git push origin 0.6.0
+```
 
+2) Docker log in, build + tag:
 ```pwsh
 docker login
 docker build -t "becdetat/logo2openscad:0.6.0" .
 docker tag "becdetat/logo2openscad:0.6.0" "becdetat/logo2openscad:latest"
 ```
 
-2) Push:
-
+3) Push:
 ```pwsh
 docker push "becdetat/logo2openscad:0.6.0"
 docker push "becdetat/logo2openscad:latest"
 ```
+
+4) Create new release in Github
+
 
 ## Example Docker Compose
 ```yml
