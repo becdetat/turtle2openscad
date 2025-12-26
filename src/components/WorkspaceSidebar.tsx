@@ -79,6 +79,8 @@ export function WorkspaceSidebar(props: WorkspaceSidebarProps) {
     props.onToggleCollapse() // Auto-collapse sidebar after selecting
   }
 
+  const orderedScripts = [...props.scripts].sort((a, b) => a.name.localeCompare(b.name))
+
   return (
     <>
       <Drawer
@@ -120,7 +122,7 @@ export function WorkspaceSidebar(props: WorkspaceSidebarProps) {
           </Box>
 
           <List sx={{ flexGrow: 1, pt: 0 }}>
-            {props.scripts.map((script) => (
+            {orderedScripts.map((script) => (
               <ListItem
                 key={script.id}
                 disablePadding
