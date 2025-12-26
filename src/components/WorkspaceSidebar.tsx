@@ -10,7 +10,6 @@ import {
   Menu,
   MenuItem,
   Stack,
-  Toolbar,
   Typography,
   Button,
 } from '@mui/material'
@@ -98,7 +97,6 @@ export function WorkspaceSidebar(props: WorkspaceSidebarProps) {
           },
         }}
       >
-        {/* <Toolbar /> */}
         <Box sx={{ overflow: 'auto', display: 'flex', flexDirection: 'column', height: '100%' }}>
           <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ px: 2, py: 1 }}>
             <Typography variant="h6" component="div">

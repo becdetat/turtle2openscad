@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type * as Monaco from 'monaco-editor'
 import type { OnMount } from '@monaco-editor/react'
-import { Box, Divider, IconButton, Typography } from '@mui/material'
+import { Box, Divider, Typography } from '@mui/material'
 import { executeLogo } from './logo/interpreter'
 import { generateOpenScad } from './logo/openscad'
 import { parseLogo } from './logo/parser'
 import { useSettings } from './hooks/useSettings'
-import { useWorkspace } from './hooks/useWorkspace'
+import { useWorkspace, generateUntitledName } from './hooks/useWorkspace'
 import { useSidebarCollapsed } from './hooks/useSidebarCollapsed'
 import { HelpDialog } from './components/HelpDialog'
 import { SettingsDialog } from './components/SettingsDialog'
@@ -39,6 +39,7 @@ export default function App(props: AppProps) {
   
   // Dialog state
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [defaultNewScriptName, setDefaultNewScriptName] = useState('')
   const [renameDialogOpen, setRenameDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [scriptToRename, setScriptToRename] = useState<string | null>(null)
@@ -228,6 +229,8 @@ export default function App(props: AppProps) {
   }
   
   const handleCreateScript = () => {
+    const defaultName = generateUntitledName(workspace.scripts.map(s => s.name))
+    setDefaultNewScriptName(defaultName)
     setCreateDialogOpen(true)
   }
   
@@ -349,6 +352,7 @@ export default function App(props: AppProps) {
       <ScriptDialog
         open={createDialogOpen}
         title="Create New Script"
+        initialValue={defaultNewScriptName}
         onClose={() => setCreateDialogOpen(false)}
         onConfirm={handleCreateConfirm}
       />

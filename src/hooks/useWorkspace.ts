@@ -93,7 +93,7 @@ function saveWorkspace(workspace: Workspace): string | null {
   }
 }
 
-function generateUntitledName(existingNames: string[]): string {
+export function generateUntitledName(existingNames: string[]): string {
   const untitledPattern = /^Untitled(\d+)$/
   let maxNumber = 0
 
