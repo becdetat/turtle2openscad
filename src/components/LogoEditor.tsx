@@ -4,6 +4,7 @@ import Editor from '@monaco-editor/react'
 import type { OnMount } from '@monaco-editor/react'
 import { alpha, useTheme } from "@mui/material/styles";
 import type { ParseResult } from "../logo/types";
+import { Edit } from "@mui/icons-material";
 
 export type LogoEditorProps = {
     scriptName: string;
@@ -12,6 +13,7 @@ export type LogoEditorProps = {
     onSourceChange: (source: string) => void;
     onEditorMount: OnMount;
     onHelpOpen: () => void;
+    onRenameScriptClicked: () => void;
 }
 
 export function LogoEditor(props: LogoEditorProps) {
@@ -30,7 +32,17 @@ export function LogoEditor(props: LogoEditorProps) {
         >
             <Box sx={{ px: 2, py: 1 }}>
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
-                    <Typography variant="subtitle1">{props.scriptName} - Logo</Typography>
+                    <Typography variant="subtitle1">
+                        {props.scriptName}
+                        <IconButton 
+                            aria-label="Rename" 
+                            onClick={props.onRenameScriptClicked} 
+                            size="small"
+                            sx={{ ml: 1 }}                           
+                        >
+                            <Edit fontSize="small" />
+                        </IconButton>
+                    </Typography>
                     <small><kbd>Ctrl</kbd>+<kbd>Enter</kbd> to preview</small>
                     <IconButton aria-label="Help" onClick={props.onHelpOpen} size="small">
                         <HelpOutlineIcon fontSize="small" />

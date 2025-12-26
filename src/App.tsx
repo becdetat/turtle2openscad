@@ -325,6 +325,7 @@ export default function App(props: AppProps) {
           onSourceChange={handleSourceChange}
           onEditorMount={onEditorMount}
           onHelpOpen={handleHelpOpen}
+          onRenameScriptClicked={() => handleRenameScript(activeScript.id)}
         />
 
         <Divider orientation="vertical" flexItem />
