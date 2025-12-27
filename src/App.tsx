@@ -200,6 +200,14 @@ export default function App(props: AppProps) {
       lastTsRef.current = null
       setIsPlaying(true)
     })
+
+    // Add Ctrl+S keyboard shortcut to run preview (same as Ctrl+Enter)
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+      setActiveSegments(runResultRef.current.segments)
+      setProgress(0)
+      lastTsRef.current = null
+      setIsPlaying(true)
+    })
   }
 
   const handleSettingsOpen = () => setSettingsOpen(true)
