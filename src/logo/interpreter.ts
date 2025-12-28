@@ -225,6 +225,26 @@ export function executeLogo(
         // Track if this is a 360-degree arc for circle generation
         const is360Arc = Math.abs(angleDeg) === 360
 
+        // If pen is down, finalize any existing polygon before starting the arc
+        // Only finalize if the polygon has more than just the initial origin point
+        if (penDown && currentPolygon && currentPolygon.length > 1) {
+          collectCommentsSince(polygonStartLine, cmdLine - 1)
+          polygons.push({
+            points: currentPolygon,
+            comments: currentPolygonComments,
+            commentsByPointIndex: currentPolygonCommentsByPointIndex
+          })
+          currentPolygon = null
+          currentPolygonComments = []
+          currentPolygonCommentsByPointIndex = new Map()
+          polygonStartLine = cmdLine
+        }
+
+        // Start a fresh polygon for the arc without including the center point
+        if (penDown) {
+          currentPolygon = []
+        }
+
         for (let i = 0; i <= segmentCount; i++) {
           const currentAngle = startHeadingRad + angleStep * i
           const px = x + radius * Math.sin(currentAngle)
@@ -238,7 +258,6 @@ export function executeLogo(
           }
 
           if (penDown && i > 0) {
-            ensurePolygonStarted()
             currentPolygon!.push({ x: px, y: py })
           }
         }

@@ -222,6 +222,19 @@ describe('interpreter', () => {
       expect(result.polygons[1].points.length).toBeGreaterThan(1)
     })
 
+    it('should not include center point in arc polygon', () => {
+      const { commands } = parseLogo('arc 45, 5')
+      const result = executeLogo(commands, [])
+      
+      expect(result.polygons.length).toBe(1)
+      const polygon = result.polygons[0]
+      
+      // The polygon should not start at [0, 0] (the center)
+      // All points should be on the arc, not at the center
+      const centerPoint = polygon.points.find(p => p.x === 0 && p.y === 0)
+      expect(centerPoint).toBeUndefined()
+    })
+
     it('should allow mixing arcs with other drawing commands', () => {
       // Arc, then pen up, then another arc
       const { commands } = parseLogo('arc 45, 5\nPU\nFD 10\nPD\narc 45, 6')
