@@ -207,6 +207,20 @@ describe('interpreter', () => {
       expect(result.polygons.length).toBe(1)
       expect(result.polygons[0].circleGeometry).toBeUndefined()
     })
+
+    it('should generate separate polygons for multiple arcs', () => {
+      const { commands } = parseLogo('arc 45, 5\narc 45, 6')
+      const result = executeLogo(commands, [])
+      
+      // Each arc should generate its own polygon
+      expect(result.polygons.length).toBe(2)
+      
+      // First arc
+      expect(result.polygons[0].points.length).toBeGreaterThan(1)
+      
+      // Second arc
+      expect(result.polygons[1].points.length).toBeGreaterThan(1)
+    })
   })
 
   describe('expressions', () => {
