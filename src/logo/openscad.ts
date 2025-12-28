@@ -37,7 +37,7 @@ export function generateOpenScad(polygons: LogoPolygon[], indentSpaces: number =
       }
       
       lines.push(`translate([${formatNum(center.x)}, ${formatNum(center.y)}])`)
-      lines.push(`${indent}circle(r=${formatNum(radius)}, $fn=${fn});`)
+      lines.push(`circle(r=${formatNum(radius)}, $fn=${fn});`)
       blocks.push(lines.join('\n'))
       continue
     }

@@ -112,4 +112,28 @@ describe('360-degree arc to circle integration', () => {
     expect(openscad).toContain('circle(r=50, $fn=40)')
     expect(openscad).not.toContain('polygon(')
   })
+
+  it('should generate polygon for 90 degree arc', () => {
+    const script = 'ARC 90, 50'
+    const { commands, comments } = parseLogo(script)
+    const { polygons } = executeLogo(commands, comments)
+    const openscad = generateOpenScad(polygons, 2, true)
+    
+    // Should output as polygon, not circle
+    expect(openscad).toContain('polygon(points=[')
+    expect(openscad).not.toContain('circle(')
+    expect(polygons[0].circleGeometry).toBeUndefined()
+  })
+
+  it('should generate polygon for 120 degree arc', () => {
+    const script = 'ARC 120, 50'
+    const { commands, comments } = parseLogo(script)
+    const { polygons } = executeLogo(commands, comments)
+    const openscad = generateOpenScad(polygons, 2, true)
+    
+    // Should output as polygon, not circle
+    expect(openscad).toContain('polygon(points=[')
+    expect(openscad).not.toContain('circle(')
+    expect(polygons[0].circleGeometry).toBeUndefined()
+  })
 })
