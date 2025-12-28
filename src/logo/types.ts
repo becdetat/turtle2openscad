@@ -56,6 +56,11 @@ export type LogoPolygon = {
   comments: LogoComment[]
   commentsByPointIndex: Map<number, LogoComment[]>  // Comments to appear before each point index
   commentOnly?: boolean  // If true, only output comments without geometry
+  circleGeometry?: {  // If present, output as circle(r=..., $fn=...) instead of polygon
+    center: Point
+    radius: number
+    fn: number
+  }
 }
 
 export type ParseResult = {

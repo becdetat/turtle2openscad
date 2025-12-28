@@ -28,7 +28,7 @@ Only a very small, mangled subset of the [Berkeley Logo](https://people.eecs.ber
 	- `RT` / `RIGHT <deg>`
 	- `PU` / `PENUP`
 	- `PD` / `PENDOWN`
-	- `ARC <angle>, <radius>` - draws an arc with turtle at center, starting at turtle's heading, extending clockwise through the angle. Turtle does not move.
+	- `ARC <angle>, <radius>` - draws an arc with turtle at center, starting at turtle's heading, extending clockwise through the angle. Turtle does not move. **Note:** When the angle is exactly 360 or -360 degrees, the arc is automatically converted to an optimized `circle(r=<radius>, $fn=<FN>)` command in the OpenSCAD output instead of generating a polygon with many points.
   - `SETX <n>` - move the turtle to the absolute X coordinate 
   - `SETY <n>` - move the turtle to the absolute Y coordinate 
   - `SETXY <n>, <n>` - move the turtle to the absolute X and Y coordinates

@@ -5,7 +5,7 @@ function pointsEqual(a: Point, b: Point) {
   return a.x === b.x && a.y === b.y
 }
 
-export function generateOpenScad(polygons: LogoPolygon[], indentSpaces: number = 2): string {
+export function generateOpenScad(polygons: LogoPolygon[], indentSpaces: number = 2, optimizeCircles: boolean = true): string {
   if (polygons.length === 0) return '// No polygons'
 
   const indent = ' '.repeat(indentSpaces)
@@ -21,6 +21,23 @@ export function generateOpenScad(polygons: LogoPolygon[], indentSpaces: number =
     
     // If this is a comment-only polygon, skip the geometry
     if (poly.commentOnly) {
+      blocks.push(lines.join('\n'))
+      continue
+    }
+    
+    // If this polygon has circle geometry and optimization is enabled, output as circle() instead of polygon()
+    if (poly.circleGeometry && optimizeCircles) {
+      const { center, radius, fn } = poly.circleGeometry
+      
+      // Output comments from commentsByPointIndex (if any)
+      for (const [, comments] of Array.from(poly.commentsByPointIndex.entries()).sort(([a], [b]) => a - b)) {
+        for (const comment of comments) {
+          lines.push(comment.text)
+        }
+      }
+      
+      lines.push(`translate([${formatNum(center.x)}, ${formatNum(center.y)}])`)
+      lines.push(`circle(r=${formatNum(radius)}, $fn=${fn});`)
       blocks.push(lines.join('\n'))
       continue
     }
