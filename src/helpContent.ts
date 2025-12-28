@@ -135,10 +135,12 @@ FD 50           // Draw a line
 #### ARC \`angle\`, \`radius\`
 Draw an arc with the turtle at center. Starts at the turtle's current heading, extends clockwise. **Note the comma separator.**
 
+When the angle is exactly **360 or -360 degrees**, the arc is automatically converted to an optimized \`circle(r=<radius>, $fn=<FN>)\` command in the OpenSCAD output instead of generating a polygon with many points.
+
 \`\`\`logo
 ARC 180, 30     // Draw 180° arc with radius 30
 ARC 90, 50      // Draw quarter circle
-ARC 360, 20     // Draw full circle
+ARC 360, 20     // Draw full circle (outputs as circle() command)
 \`\`\`
 
 Arc resolution can be controlled with the EXTSETFN command (see Extension Commands below).

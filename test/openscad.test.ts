@@ -400,4 +400,128 @@ describe('openscad', () => {
       expect(result).not.toContain('polygon(')
     })
   })
+
+  describe('circle geometry', () => {
+    it('should output circle command for 360-degree arc', () => {
+      const polygons: LogoPolygon[] = [
+        {
+          points: [
+            { x: 0, y: 0 },
+            { x: 10, y: 0 },
+            { x: 0, y: 10 },
+          ],
+          comments: [],
+          commentsByPointIndex: new Map(),
+          circleGeometry: {
+            center: { x: 0, y: 0 },
+            radius: 50,
+            fn: 40
+          }
+        },
+      ]
+
+      const result = generateOpenScad(polygons)
+
+      expect(result).toContain('circle(r=50, $fn=40)')
+      expect(result).toContain('translate([0, 0])')
+      expect(result).not.toContain('polygon(')
+    })
+
+    it('should output circle with custom FN value', () => {
+      const polygons: LogoPolygon[] = [
+        {
+          points: [],
+          comments: [],
+          commentsByPointIndex: new Map(),
+          circleGeometry: {
+            center: { x: 10, y: 20 },
+            radius: 30,
+            fn: 6
+          }
+        },
+      ]
+
+      const result = generateOpenScad(polygons)
+
+      expect(result).toContain('circle(r=30, $fn=6)')
+      expect(result).toContain('translate([10, 20])')
+    })
+
+    it('should output circle with formatted numbers', () => {
+      const polygons: LogoPolygon[] = [
+        {
+          points: [],
+          comments: [],
+          commentsByPointIndex: new Map(),
+          circleGeometry: {
+            center: { x: 10.5, y: 20.123456 },
+            radius: 15.789,
+            fn: 12
+          }
+        },
+      ]
+
+      const result = generateOpenScad(polygons)
+
+      expect(result).toContain('circle(r=15.789, $fn=12)')
+      expect(result).toContain('translate([10.5, 20.123456])')
+    })
+
+    it('should include comments before circle', () => {
+      const polygons: LogoPolygon[] = [
+        {
+          points: [],
+          comments: [
+            { text: '// This is a circle', line: 1 },
+          ],
+          commentsByPointIndex: new Map(),
+          circleGeometry: {
+            center: { x: 0, y: 0 },
+            radius: 25,
+            fn: 20
+          }
+        },
+      ]
+
+      const result = generateOpenScad(polygons)
+
+      expect(result).toContain('// This is a circle')
+      expect(result).toContain('circle(r=25, $fn=20)')
+      const commentIndex = result.indexOf('// This is a circle')
+      const circleIndex = result.indexOf('circle(')
+      expect(commentIndex).toBeLessThan(circleIndex)
+    })
+
+    it('should handle multiple circles', () => {
+      const polygons: LogoPolygon[] = [
+        {
+          points: [],
+          comments: [],
+          commentsByPointIndex: new Map(),
+          circleGeometry: {
+            center: { x: 0, y: 0 },
+            radius: 10,
+            fn: 8
+          }
+        },
+        {
+          points: [],
+          comments: [],
+          commentsByPointIndex: new Map(),
+          circleGeometry: {
+            center: { x: 50, y: 50 },
+            radius: 20,
+            fn: 16
+          }
+        },
+      ]
+
+      const result = generateOpenScad(polygons)
+
+      expect(result).toContain('circle(r=10, $fn=8)')
+      expect(result).toContain('translate([0, 0])')
+      expect(result).toContain('circle(r=20, $fn=16)')
+      expect(result).toContain('translate([50, 50])')
+    })
+  })
 })

@@ -25,6 +25,23 @@ export function generateOpenScad(polygons: LogoPolygon[], indentSpaces: number =
       continue
     }
     
+    // If this polygon has circle geometry, output as circle() instead of polygon()
+    if (poly.circleGeometry) {
+      const { center, radius, fn } = poly.circleGeometry
+      
+      // Output comments from commentsByPointIndex (if any)
+      for (const [, comments] of Array.from(poly.commentsByPointIndex.entries()).sort(([a], [b]) => a - b)) {
+        for (const comment of comments) {
+          lines.push(comment.text)
+        }
+      }
+      
+      lines.push(`translate([${formatNum(center.x)}, ${formatNum(center.y)}])`)
+      lines.push(`${indent}circle(r=${formatNum(radius)}, $fn=${fn});`)
+      blocks.push(lines.join('\n'))
+      continue
+    }
+    
     const pts = [...poly.points]
     if (pts.length === 0) pts.push({ x: 0, y: 0 })
 

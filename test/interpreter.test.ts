@@ -175,6 +175,38 @@ describe('interpreter', () => {
       const result3 = executeLogo(cmd3, [])
       expect(result3.segments.length).toBe(5)
     })
+
+    it('should mark 360-degree arcs for circle generation', () => {
+      const { commands } = parseLogo('ARC 360, 50')
+      const result = executeLogo(commands, [])
+      
+      // Should still generate segments for preview
+      expect(result.segments.length).toBeGreaterThan(0)
+      
+      // Should create a polygon with circle geometry
+      expect(result.polygons.length).toBe(1)
+      expect(result.polygons[0].circleGeometry).toBeDefined()
+      expect(result.polygons[0].circleGeometry?.center).toEqual({ x: 0, y: 0 })
+      expect(result.polygons[0].circleGeometry?.radius).toBe(50)
+      expect(result.polygons[0].circleGeometry?.fn).toBe(40) // default FN
+    })
+
+    it('should respect custom FN for 360-degree arcs', () => {
+      const { commands } = parseLogo('EXTSETFN 8\nARC 360, 30')
+      const result = executeLogo(commands, [])
+      
+      expect(result.polygons.length).toBe(1)
+      expect(result.polygons[0].circleGeometry).toBeDefined()
+      expect(result.polygons[0].circleGeometry?.fn).toBe(8)
+    })
+
+    it('should not mark non-360 arcs for circle generation', () => {
+      const { commands } = parseLogo('ARC 180, 50')
+      const result = executeLogo(commands, [])
+      
+      expect(result.polygons.length).toBe(1)
+      expect(result.polygons[0].circleGeometry).toBeUndefined()
+    })
   })
 
   describe('expressions', () => {

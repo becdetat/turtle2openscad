@@ -221,6 +221,9 @@ export function executeLogo(
         const startHeadingRad = degToRad(headingDeg)
         const angleStep = degToRad(angleDeg) / segmentCount
         const currentArcGroup = arcGroupId++
+        
+        // Track if this is a 360-degree arc for circle generation
+        const is360Arc = Math.abs(angleDeg) === 360
 
         for (let i = 0; i <= segmentCount; i++) {
           const currentAngle = startHeadingRad + angleStep * i
@@ -238,6 +241,27 @@ export function executeLogo(
             ensurePolygonStarted()
             currentPolygon!.push({ x: px, y: py })
           }
+        }
+        
+        // If this is a 360-degree arc, finalize the polygon with circle geometry
+        if (is360Arc && penDown && currentPolygon) {
+          collectCommentsSince(polygonStartLine, cmdLine)
+          polygons.push({
+            points: currentPolygon,
+            comments: currentPolygonComments,
+            commentsByPointIndex: currentPolygonCommentsByPointIndex,
+            circleGeometry: {
+              center: { x, y },
+              radius: radius,
+              fn: currentFn
+            }
+          })
+          
+          // Reset for next polygon
+          currentPolygon = null
+          currentPolygonComments = []
+          currentPolygonCommentsByPointIndex = new Map()
+          polygonStartLine = cmdLine + 1
         }
 
         break
