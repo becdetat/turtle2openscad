@@ -2,13 +2,23 @@ import { useCallback, useEffect, useState } from 'react'
 import type { LogoScript, Workspace } from '../types/workspace'
 import { defaultLogoScript } from '../logo/sample'
 
+function generateId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return generateId()
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16)
+  })
+}
+
 const WORKSPACE_KEY = 'logo2openscad:workspace'
 const LEGACY_KEY = 'turtle2openscad:script'
 
 function createEmptyScript(name: string = 'Untitled1', useDefaultContent: boolean = false): LogoScript {
   const now = Date.now()
   return {
-    id: crypto.randomUUID(),
+    id: generateId(),
     name,
     content: useDefaultContent ? defaultLogoScript : '',
     createdAt: now,
@@ -236,7 +246,7 @@ export function useWorkspace() {
       }
       const now = Date.now()
       const newScript: LogoScript = {
-        id: crypto.randomUUID(),
+        id: generateId(),
         name: trimmedName,
         content: source.content,
         createdAt: now,
@@ -272,7 +282,7 @@ export function useWorkspace() {
         ? generateImportedName(raw.name, allNames)
         : raw.name
       toAdd.push({
-        id: crypto.randomUUID(),
+        id: generateId(),
         name: resolvedName,
         content: raw.content,
         createdAt: typeof raw.createdAt === 'number' ? raw.createdAt : now,

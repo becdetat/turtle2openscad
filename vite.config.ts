@@ -10,4 +10,8 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(appVersion),
   },
+  server: {
+    allowedHosts: ['seagull'],
+    cors: true,
+  },
 })
