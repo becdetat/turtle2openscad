@@ -37,8 +37,9 @@ function collectControlPoints(
   startHeadingDeg: number,
   variables: VariableContext,
   initialDistanceScale = 1,
-): { controlPoints: Point[]; finalX: number; finalY: number; finalHeadingDeg: number } {
+): { controlPoints: Point[]; traversalSegments: Array<{ from: Point; to: Point }>; finalX: number; finalY: number; finalHeadingDeg: number } {
   const controlPoints: Point[] = []
+  const traversalSegments: Array<{ from: Point; to: Point }> = []
   let x = startX
   let y = startY
   let headingDeg = startHeadingDeg
@@ -62,8 +63,12 @@ function collectControlPoints(
         const value = cmd.value ? evaluateExpression(cmd.value, localVars) : 0
         const dist = (cmd.kind === 'BK' ? -value : value) * distanceScale
         const rad = degToRad(headingDeg)
+        const fromX = x, fromY = y
         x += Math.sin(rad) * dist
         y += Math.cos(rad) * dist
+        if (x !== fromX || y !== fromY) {
+          traversalSegments.push({ from: { x: fromX, y: fromY }, to: { x, y } })
+        }
         syncLocalVars()
         break
       }
@@ -79,25 +84,45 @@ function collectControlPoints(
         headingDeg = cmd.value ? evaluateExpression(cmd.value, localVars) : 0
         syncLocalVars()
         break
-      case 'HOME':
+      case 'HOME': {
+        const fromX = x, fromY = y
         x = 0
         y = 0
         headingDeg = 0
+        if (x !== fromX || y !== fromY) {
+          traversalSegments.push({ from: { x: fromX, y: fromY }, to: { x, y } })
+        }
         syncLocalVars()
         break
-      case 'SETX':
+      }
+      case 'SETX': {
+        const fromX = x, fromY = y
         x = cmd.value ? evaluateExpression(cmd.value, localVars) : 0
+        if (x !== fromX || y !== fromY) {
+          traversalSegments.push({ from: { x: fromX, y: fromY }, to: { x, y } })
+        }
         syncLocalVars()
         break
-      case 'SETY':
+      }
+      case 'SETY': {
+        const fromX = x, fromY = y
         y = cmd.value ? evaluateExpression(cmd.value, localVars) : 0
+        if (x !== fromX || y !== fromY) {
+          traversalSegments.push({ from: { x: fromX, y: fromY }, to: { x, y } })
+        }
         syncLocalVars()
         break
-      case 'SETXY':
+      }
+      case 'SETXY': {
+        const fromX = x, fromY = y
         x = cmd.value ? evaluateExpression(cmd.value, localVars) : 0
         y = cmd.value2 ? evaluateExpression(cmd.value2, localVars) : 0
+        if (x !== fromX || y !== fromY) {
+          traversalSegments.push({ from: { x: fromX, y: fromY }, to: { x, y } })
+        }
         syncLocalVars()
         break
+      }
       case 'MAKE':
         if (cmd.varName) {
           if (cmd.instructionListValue !== undefined) {
@@ -160,7 +185,7 @@ function collectControlPoints(
   const parsed = parseLogo(instructionListText)
   parsed.commands.forEach(processCmd)
 
-  return { controlPoints, finalX: x, finalY: y, finalHeadingDeg: headingDeg }
+  return { controlPoints, traversalSegments, finalX: x, finalY: y, finalHeadingDeg: headingDeg }
 }
 
 function createSegment(
@@ -519,9 +544,13 @@ export function executeLogo(
       }
       case 'EXTBEZIERCURVE': {
         if (cmd.instructionList !== undefined) {
-          const { controlPoints, finalX, finalY, finalHeadingDeg } = collectControlPoints(
+          const { controlPoints, traversalSegments, finalX, finalY, finalHeadingDeg } = collectControlPoints(
             cmd.instructionList, x, y, headingDeg, variables, distanceScale,
           )
+
+          for (const t of traversalSegments) {
+            segments.push(createSegment(t.from, t.to, false, cmdLine))
+          }
 
           if (controlPoints.length >= 2) {
             const steps = Math.max(1, currentFn * 4)

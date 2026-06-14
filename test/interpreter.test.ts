@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { executeLogo } from '../src/logo/interpreter'
 import { parseLogo } from '../src/logo/parser'
+import { getRenderablePreviewSegments } from '../src/logo/drawPreview'
 
 describe('interpreter', () => {
 
@@ -945,6 +946,79 @@ describe('interpreter', () => {
       const last = result.segments[result.segments.length - 1]
       expect(last.to.x).toBeCloseTo(0)
       expect(last.to.y).toBeCloseTo(0)
+    })
+  })
+
+  describe('EXTBEZIERCURVE traversal segments', () => {
+    it('should produce penDown=false traversal segments before bezier curve segments', () => {
+      // Each command must be on its own line so newline→semicolon normalization separates them
+      const code = 'PD\nEXTBEZIERCURVE [\n  FD 50\n  EXTDEFCONTROLPOINT\n  RT 90\n  FD 50\n  EXTDEFCONTROLPOINT\n  FD 50\n  EXTDEFCONTROLPOINT\n]'
+      const { commands } = parseLogo(code)
+      const result = executeLogo(commands, [])
+
+      const traversal = result.segments.filter(s => !s.penDown)
+      const curve = result.segments.filter(s => s.penDown)
+
+      expect(traversal.length).toBeGreaterThan(0)
+      expect(curve.length).toBeGreaterThan(0)
+
+      // Traversal segments must appear before curve segments in the array
+      const firstCurveIdx = result.segments.findIndex(s => s.penDown)
+      const lastTraversalIdx = result.segments.map(s => !s.penDown).lastIndexOf(true)
+      expect(lastTraversalIdx).toBeLessThan(firstCurveIdx)
+    })
+
+    it('should produce one traversal segment per position-changing movement', () => {
+      // 3 FD commands inside the block → 3 traversal segments (RT only rotates, no traversal)
+      const code = 'PD\nEXTBEZIERCURVE [\n  FD 50\n  EXTDEFCONTROLPOINT\n  RT 90\n  FD 50\n  EXTDEFCONTROLPOINT\n  FD 50\n  EXTDEFCONTROLPOINT\n]'
+      const { commands } = parseLogo(code)
+      const result = executeLogo(commands, [])
+
+      const traversal = result.segments.filter(s => !s.penDown)
+      expect(traversal).toHaveLength(3)
+    })
+
+    it('should produce traversal segments even when outer pen is up', () => {
+      const code = 'PU\nEXTBEZIERCURVE [\n  FD 50\n  EXTDEFCONTROLPOINT\n  FD 50\n  EXTDEFCONTROLPOINT\n]'
+      const { commands } = parseLogo(code)
+      const result = executeLogo(commands, [])
+
+      const traversal = result.segments.filter(s => !s.penDown)
+      expect(traversal.length).toBeGreaterThan(0)
+    })
+
+    it('should produce traversal segments for each iteration of REPEAT inside EXTBEZIERCURVE', () => {
+      // REPEAT 3 with FD + EXTDEFCONTROLPOINT on separate lines → 3 traversal segments
+      const code = 'PD\nEXTBEZIERCURVE [\n  REPEAT 3 [\n    FD 10\n    EXTDEFCONTROLPOINT\n  ]\n]'
+      const { commands } = parseLogo(code)
+      const result = executeLogo(commands, [])
+
+      const traversal = result.segments.filter(s => !s.penDown)
+      expect(traversal).toHaveLength(3)
+    })
+
+    it('should suppress traversal segments when getRenderablePreviewSegments is called with hidePenUp=true', () => {
+      const code = 'PD\nEXTBEZIERCURVE [\n  FD 50\n  EXTDEFCONTROLPOINT\n  FD 50\n  EXTDEFCONTROLPOINT\n]'
+      const { commands } = parseLogo(code)
+      const result = executeLogo(commands, [])
+
+      const visibleAll = getRenderablePreviewSegments(result.segments, result.segments.length, false)
+      const traversalAll = visibleAll.filter(r => !r.segment.penDown)
+      expect(traversalAll.length).toBeGreaterThan(0)
+
+      const visibleHidden = getRenderablePreviewSegments(result.segments, result.segments.length, true)
+      const traversalHidden = visibleHidden.filter(r => !r.segment.penDown)
+      expect(traversalHidden).toHaveLength(0)
+    })
+
+    it('should produce independent traversal segments for multiple EXTBEZIERCURVE blocks', () => {
+      const code = 'PD\nEXTBEZIERCURVE [\n  FD 30\n  EXTDEFCONTROLPOINT\n  FD 30\n  EXTDEFCONTROLPOINT\n]\nEXTBEZIERCURVE [\n  FD 20\n  EXTDEFCONTROLPOINT\n  FD 20\n  EXTDEFCONTROLPOINT\n]'
+      const { commands } = parseLogo(code)
+      const result = executeLogo(commands, [])
+
+      const traversal = result.segments.filter(s => !s.penDown)
+      // 2 FD movements per block × 2 blocks = 4 traversal segments
+      expect(traversal).toHaveLength(4)
     })
   })
 })
